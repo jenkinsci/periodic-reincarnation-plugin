@@ -30,12 +30,14 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 		ReincarnateFailedJobsConfiguration config = ReincarnateFailedJobsConfiguration
 				.get();
 		if (config == null) {
-			LOGGER.info("config is NULL");
+			LOGGER.info("No configuration available.");
 			return;
 		}
 
 		String cron = config.getCronTime();
 		boolean isActive = config.isActive();
+		if (!isActive)
+			return;
 		if (cron != null) {
 			try {
 
@@ -67,17 +69,13 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
 					}
 				}
-				if (config.getRegExprs() != null)
-					LOGGER.info("First RegEx in CLASS: "
-							+ config.getRegExprs().get(0).value);
-				else
-					LOGGER.info("First RegEx in CLASS: regExprs is NULL");
+
 			} catch (ANTLRException e) {
 				LOGGER.warning("Could not parse the given cron tab. Check for type errors: "
 						+ e.getMessage());
 			}
 		} else {
-			LOGGER.warning("Cron is not configured.");
+			LOGGER.warning("Cron time is not configured.");
 		}
 	}
 

@@ -22,21 +22,14 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
 			.getLogger(ReincarnateFailedJobsConfiguration.class.getName());
 
 	public ReincarnateFailedJobsConfiguration() {
-		LOGGER.info("LOADING REINCARNATION CONFIGURATION...................................");
 		load();
-		if (this.regExprs != null)
-			LOGGER.info("In CONFIG: " + regExprs.get(0).value);
-		else LOGGER.info("RegExprs is NULL");
 	}
 
 	@DataBoundConstructor
 	public ReincarnateFailedJobsConfiguration(String active, String cronTime,
 			List<RegEx> regExprs) {
-		LOGGER.info("2nd configuration constructor.........................................");
 		this.active = active;
 		this.cronTime = cronTime;
-		if (regExprs == null) LOGGER.info("regExprs NULL!!");
-		if (regExprs != null) LOGGER.info(regExprs.get(0).value);
 		this.regExprs = regExprs;
 	}
 
@@ -48,7 +41,6 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
 		this.active = json.getString("active").trim();
 		this.cronTime = json.getString("cronTime");
 		
-		LOGGER.info("RegEx in SAVING: " + regExprs.get(0).value);
 		save();
 		return true;
 	}
@@ -59,7 +51,6 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
 	}
 
 	public List<RegEx> getRegExprs() {
-		LOGGER.info("regEx size: " + this.regExprs.size());
 		return this.regExprs;
 	}
 
