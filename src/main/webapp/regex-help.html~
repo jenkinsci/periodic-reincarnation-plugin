@@ -1,0 +1,3 @@
+<div>
+	List of regular expressions that determines which failed builds should be restarted. If there are no regular expressions every failed build is restarted. If there are and there is a failed build which log file matches a regular expression then this build is restarted.
+</div>

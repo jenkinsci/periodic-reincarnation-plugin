@@ -1,21 +1,21 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" 
 xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   	
-  	<f:section title="${% Periodic reincarnation of failed builds}">
-  		<f:entry title="${%Enable/Disable}" field="active">
+  	<f:section title="${%title.configtitle}">
+  		<f:entry title="${%title.enabledisable}" field="active">
 			<f:checkbox checked="${it.getActive()}"/>
 	 	</f:entry>
 		
-		<f:entry title="${%Cron time}" field="cronTime">
+		<f:entry title="${%title.crontime}" help="/plugin/periodic-reincarnation/cron-time-help.html" field="cronTime">
 			<f:textbox />
 	 	</f:entry>
 	
-	    <f:entry title="${%List of regular expressions}" help="/plugin/reincarnation/${regEx.help}">
+	    <f:entry title="${%title.regularexpressions}" help="/plugin/periodic-reincarnation/regex-help.html">
     		<f:repeatable var="regExprs" items="${instance.getRegExprs()}">
         		<table width="100%">
           
-         			<f:entry title="${%RegEx}">
-            			<f:textbox name="regExprs.value" value="${regExprs.getValue()}"/>
+         			<f:entry title="${%titel.regex}">
+            			<f:textbox name="regExprs.value" value="${regExprs.getValue()}" />
           	 		</f:entry>
           
           			<f:entry title="">
@@ -27,7 +27,14 @@ xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
         		</table>
       		</f:repeatable>
 		</f:entry>
-  
+  		
+  		<f:entry title="${%title.restartstablewithnochange}" help="/plugin/periodic-reincarnation/stable-without-change-help.html" field="noChange">
+			<f:checkbox checked="${it.getNoChange()}"/>
+	 	</f:entry>
+  		
+  		<f:entry title="${%title.showlog}" help="/plugin/periodic-reincarnation/show-log-help.html" field="logInfo">
+			<f:checkbox checked="${it.getLogInfo()}"/>
+	 	</f:entry>
 	 	
-	</f:section>
+	</f:section> 
 </j:jelly>
