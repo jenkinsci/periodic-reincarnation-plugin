@@ -61,8 +61,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
 		String cron = config.getCronTime();
 		boolean isActive = config.isActive();
-		if (!isActive)
+		if (!isActive) {
 			return;
+		}
 		if (cron != null) {
 			try {
 
@@ -74,7 +75,6 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
 					List<?> projectList = Hudson.getInstance()
 							.getProjects();
-
 					for (Iterator<?> i = projectList.iterator(); i
 							.hasNext();) {
 						Project<?, ?> project = (Project<?, ?>) i.next();
@@ -87,10 +87,10 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 								&& !project.isBuilding()
 								&& !project.isInQueue()) {
 							if (checkRegExprs(project.getLastBuild())) {
-								this.restart(project, config);
+								this.restart(project, config, "regEx hit");
 							} else if (config.isRestartUnchangedJobsEnabled()
 									&& qualifyForUnchangedRestart(project)) {
-								this.restart(project, config);
+								this.restart(project, config, "no change since success");
 							}
 						}
 
@@ -174,10 +174,11 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	 * @param config instance of periodic reincarnation configuration.
 	 */
 	private void restart(Project<?, ?> project,
-			ReincarnateFailedJobsConfiguration config) {
+			ReincarnateFailedJobsConfiguration config, String cause) {
 		project.scheduleBuild(new ReincarnateFailedBuildsCause());
 		if (config.isLogInfoEnabled()) {
-			LOGGER.info("Reincarnating failed build: "
+			
+			LOGGER.info("Restarting failed build(" + cause + ")........"
 					+ project.getDisplayName());
 		}
 	}
