@@ -1,24 +1,17 @@
 package org.jenkinsci.plugins;
 
-import java.util.Iterator;
 
 import org.jenkinsci.plugins.ReincarnateFailedJobsConfiguration;
-import org.junit.Before;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.jvnet.hudson.test.recipes.Recipe;
-import org.jvnet.hudson.test.recipes.Recipe.Runner;
 
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
 import com.gargoylesoftware.htmlunit.html.HtmlInput;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
-import com.gargoylesoftware.htmlunit.html.HtmlSubmitInput;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 
-import hudson.model.*;
-import hudson.tasks.Shell;
 
 public class TestConfiguration extends HudsonTestCase {
 

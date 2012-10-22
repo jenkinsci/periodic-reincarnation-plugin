@@ -74,6 +74,8 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
 			return FormValidation.ok();
 		} catch (ANTLRException e) {
 			return FormValidation.error("Cron time could not be parsed. Please check for type errors!");
+		} catch (NullPointerException e) {
+			return FormValidation.error("Cron time was null");
 		}
 	}
 
