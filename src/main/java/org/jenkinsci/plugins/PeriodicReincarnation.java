@@ -119,7 +119,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	
 	/**
 	 * Returns this AsyncTask.
-	 * @return
+	 * @return the instance of PeriodicReincarnation which is currently running
 	 */
 	public static PeriodicReincarnation get() {
 		return AsyncPeriodicWork.all().get(PeriodicReincarnation.class);

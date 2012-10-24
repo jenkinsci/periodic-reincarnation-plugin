@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
 import hudson.model.Hudson;
@@ -30,20 +32,19 @@ public class TestConfiguration extends HudsonTestCase {
 	@LocalData
 	public void test1() throws Exception {
 		
+		assertNotNull(PeriodicReincarnation.get());
+		assertEquals("PeriodicReincarnation", new ReincarnateFailedBuildsCause().getShortDescription());
+		assertEquals(60000, PeriodicReincarnation.get().getRecurrencePeriod());
 		
 		Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem("test_job");
 		assertNotNull("job missing.. @LocalData problem?", job1);
 		assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
-		System.out.println("LAST BUILD JOB1=============>"
-				+ job1.getLastBuild().getResult().toString());
 		System.out.println("JOB1 LOG:" + job1.getLastBuild().getLogFile().toString());
 		
 		Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem("no_change");
 		assertNotNull("job missing.. @LocalData problem?", job2);
 		assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
 		assertNotNull(job2.getLastSuccessfulBuild());
-		System.out.println("LAST BUILD JOB2=============>"
-				+ job2.getLastBuild().getResult().toString());
 
 		this.getGlobalForm();
 		
@@ -102,5 +103,7 @@ public class TestConfiguration extends HudsonTestCase {
 		this.form = page.getFormByName("config");
 		assertNotNull("Form is null!", this.form);
 	}
+	
+	
 
 }
