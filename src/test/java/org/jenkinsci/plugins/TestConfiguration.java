@@ -77,6 +77,7 @@ public class TestConfiguration extends HudsonTestCase {
 
 		submit(form);
 		config = new ReincarnateFailedJobsConfiguration();
+		assertNotNull(config);
 		assertEquals("* * * * *", config.getCronTime());
 		assertEquals("true", config.getActive());
 		assertTrue(config.isActive());
