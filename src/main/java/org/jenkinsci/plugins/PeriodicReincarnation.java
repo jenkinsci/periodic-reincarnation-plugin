@@ -34,10 +34,15 @@ import hudson.util.RunList;
  * only when the time specified in the cron tab overlaps with the current
  * minute.
  * 
+ * @author yboev
+ * 
  */
 @Extension
 public class PeriodicReincarnation extends AsyncPeriodicWork {
 
+    /**
+     * Logger for PeriodicReincarnation.
+     */
     private static final Logger LOGGER = Logger
             .getLogger(PeriodicReincarnation.class.getName());
 
@@ -50,33 +55,36 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
     /**
      * This method is called every minute.
+     *@param taskListener TaskListener 
      */
     @Override
     protected void execute(TaskListener taskListener) {
-        ReincarnateFailedJobsConfiguration config = ReincarnateFailedJobsConfiguration
+        final ReincarnateFailedJobsConfiguration config = ReincarnateFailedJobsConfiguration
                 .get();
         if (config == null) {
             LOGGER.info("No configuration available.");
             return;
         }
 
-        String cron = config.getCronTime();
-        boolean isActive = config.isActive();
+        final String cron = config.getCronTime();
+        final boolean isActive = config.isActive();
         if (!isActive) {
             return;
         }
         if (cron != null) {
             try {
 
-                CronTab cronTab = new CronTab(cron);
-                long currentTime = System.currentTimeMillis();
+                final CronTab cronTab = new CronTab(cron);
+                final long currentTime = System.currentTimeMillis();
 
                 if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0
                         && isActive) {
 
-                    List<?> projectList = Hudson.getInstance().getProjects();
-                    for (Iterator<?> i = projectList.iterator(); i.hasNext();) {
-                        Project<?, ?> project = (Project<?, ?>) i.next();
+                    final List<?> projectList = Hudson.getInstance()
+                            .getProjects();
+                    for (final Iterator<?> i = projectList.iterator(); i
+                            .hasNext();) {
+                        final Project<?, ?> project = (Project<?, ?>) i.next();
                         if (project != null
                                 && project instanceof BuildableItem
                                 && project.getLastBuild() != null
@@ -110,6 +118,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * Recurrence will occur every minute, but action will be taken according to
      * the cron time set in the configuration. Only when this minute and the
      * cron tab time overlap.
+     * 
+     * @return The recurrence period in ms.
      */
     @Override
     public long getRecurrencePeriod() {
@@ -154,9 +164,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         // WAS stable means: last build was worse or equal to FAILURE, second
         // last was better than FAILURE
         if (project.getBuilds() != null && project.getBuilds().size() >= 2) {
-            RunList<?> builds = project.getBuilds();
-            Run<?, ?> lastBuild = builds.getLastBuild();
-            Run<?, ?> secondLastBuild = builds.get(builds.size() - 2);
+            final RunList<?> builds = project.getBuilds();
+            final Run<?, ?> lastBuild = builds.getLastBuild();
+            final Run<?, ?> secondLastBuild = builds.get(builds.size() - 2);
             if (lastBuild != null && lastBuild.getResult() != null
                     && lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
                     && secondLastBuild != null
@@ -184,6 +194,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      *            the project.
      * @param config
      *            instance of periodic reincarnation configuration.
+     * @param cause
+     *            the cause for the restart.
      */
     private void restart(Project<?, ?> project,
             ReincarnateFailedJobsConfiguration config, String cause) {
@@ -203,19 +215,20 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * @return true if at least one match, false otherwise.
      */
     private boolean checkRegExprs(Run<?, ?> build) {
-        ReincarnateFailedJobsConfiguration config = new ReincarnateFailedJobsConfiguration();
-        List<RegEx> regExprs = config.getRegExprs();
-        if (regExprs == null || regExprs.size() == 0)
+        final ReincarnateFailedJobsConfiguration config = new ReincarnateFailedJobsConfiguration();
+        final List<RegEx> regExprs = config.getRegExprs();
+        if (regExprs == null || regExprs.size() == 0) {
             return true;
-        for (Iterator<RegEx> i = regExprs.iterator(); i.hasNext();) {
-            RegEx currentRegEx = i.next();
+        }
+        for (final Iterator<RegEx> i = regExprs.iterator(); i.hasNext();) {
+            final RegEx currentRegEx = i.next();
             try {
                 if (checkFile(build.getLogFile(), currentRegEx.getPattern(),
                         true)) {
                     return true;
                 }
             } catch (AbortException e) {
-                // e.printStackTrace();
+                e.printStackTrace();
             }
         }
         return false;
@@ -224,26 +237,34 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     /**
      * Searches for a given pattern in a given file.
      * 
+     * @param file
+     *            the current file being checked.
+     * @param pattern
+     *            the reg ex we are checking with.
      * @param abortAfterFirstHit
      *            normally true, can be set to false in order to continue
      *            searching.
+     * 
+     * @return True if reg ex was found in the file, false otherwise.
      */
     private boolean checkFile(File file, Pattern pattern,
             boolean abortAfterFirstHit) {
-        if (pattern == null)
+        if (pattern == null) {
             return false;
+        }
         boolean rslt = false;
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(file));
             String line;
             while ((line = reader.readLine()) != null) {
-                Matcher matcher = pattern.matcher(line);
+                final Matcher matcher = pattern.matcher(line);
                 if (matcher.find()) {
                     // we have a hit
                     rslt = true;
-                    if (abortAfterFirstHit)
+                    if (abortAfterFirstHit) {
                         return true;
+                    }
                 }
             }
         } catch (IOException e) {
