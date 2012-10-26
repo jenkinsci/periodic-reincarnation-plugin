@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins;
 
-import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
@@ -8,14 +7,8 @@ import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Result;
 
-import org.jenkinsci.plugins.ReincarnateFailedJobsConfiguration;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
-import org.jvnet.hudson.test.recipes.Recipe;
-import org.jvnet.hudson.test.recipes.Recipe.Runner;
 import org.xml.sax.SAXException;
 
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
@@ -25,26 +18,41 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlButton;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 
+/**
+ * Test class.
+ * @author yboev
+ *
+ */
 public class TestConfiguration extends HudsonTestCase {
-
+    
+    /**
+     * The global configuration.
+     */
     private ReincarnateFailedJobsConfiguration config;
+    /**
+     * The HTML form.
+     */
     private HtmlForm form;
 
+    /**
+     * TestCase.
+     * @throws Exception exception.
+     */
     @LocalData
     public void test1() throws Exception {
-
+        final long reccurancePeriod = 60000;
         assertNotNull(PeriodicReincarnation.get());
         assertEquals("PeriodicReincarnation",
                 new ReincarnateFailedBuildsCause().getShortDescription());
-        assertEquals(60000, PeriodicReincarnation.get().getRecurrencePeriod());
+        assertEquals(reccurancePeriod, PeriodicReincarnation.get().getRecurrencePeriod());
 
-        Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem("test_job");
+        final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem("test_job");
         assertNotNull("job missing.. @LocalData problem?", job1);
         assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
         System.out.println("JOB1 LOG:"
                 + job1.getLastBuild().getLogFile().toString());
 
-        Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem("no_change");
+        final Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem("no_change");
         assertNotNull("job missing.. @LocalData problem?", job2);
         assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
         assertNotNull(job2.getLastSuccessfulBuild());
@@ -92,8 +100,17 @@ public class TestConfiguration extends HudsonTestCase {
         assertTrue(config.isLogInfoEnabled());
     }
 
+    /**
+     * Finds and sets the global form. Also makes a couple of test to see if
+     * everything is correct.
+     * 
+     * @throws IOException
+     *             IO error
+     * @throws SAXException
+     *             SAX error
+     */
     private void getGlobalForm() throws IOException, SAXException {
-        HtmlPage page = new WebClient().goTo("configure");
+        final HtmlPage page = new WebClient().goTo("configure");
         final String allElements = page.asText();
 
         assertTrue(allElements.contains("Cron Time"));
