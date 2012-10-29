@@ -36,9 +36,9 @@
   	</developers>
   	
 	<scm>
-    	<connection>scm:git:ssh://github.com/jenkinsci/periodic-reincarnation-plugin.git</connection>
-        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/periodic-reincarnation-plugin.git</developerConnection>
-        <url>https://github.com/jenkinsci/periodic-reincarnation-plugin</url>
+    	<connection> scm:git:ssh://github.com/jenkinsci/periodic-reincarnation-plugin.git </connection>
+        <developerConnection> scm:git:ssh://git@github.com:jenkinsci/periodic-reincarnation-plugin.git </developerConnection>
+        <url> https://github.com/jenkinsci/periodic-reincarnation-plugin </url>
     </scm> 
 
  	<!-- get every artifact through repo.jenkins-ci.org, which proxies all the artifacts that we need -->
