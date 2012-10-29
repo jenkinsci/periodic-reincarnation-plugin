@@ -42,8 +42,9 @@ public class TestConfiguration extends HudsonTestCase {
     public void test1() throws Exception {
         final long reccurancePeriod = 60000;
         assertNotNull(PeriodicReincarnation.get());
-        assertEquals("PeriodicReincarnation",
-                new ReincarnateFailedBuildsCause().getShortDescription());
+        final String s = "reg ex hit";
+        assertEquals("PeriodicReincarnation - " + s,
+                new ReincarnateFailedBuildsCause(s).getShortDescription());
         assertEquals(reccurancePeriod, PeriodicReincarnation.get().getRecurrencePeriod());
 
         final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem("test_job");
