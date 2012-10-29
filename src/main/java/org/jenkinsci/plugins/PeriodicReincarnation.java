@@ -94,11 +94,11 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                                 && !project.isBuilding()
                                 && !project.isInQueue()) {
                             if (checkRegExprs(project.getLastBuild())) {
-                                this.restart(project, config, "regEx hit");
+                                this.restart(project, config, "reg ex hit");
                             } else if (config.isRestartUnchangedJobsEnabled()
                                     && qualifyForUnchangedRestart(project)) {
                                 this.restart(project, config,
-                                        "no change since success");
+                                        "no difference between last builds");
                             }
                         }
 
@@ -199,7 +199,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      */
     private void restart(Project<?, ?> project,
             ReincarnateFailedJobsConfiguration config, String cause) {
-        project.scheduleBuild(new ReincarnateFailedBuildsCause());
+        project.scheduleBuild(new ReincarnateFailedBuildsCause(cause));
         if (config.isLogInfoEnabled()) {
 
             LOGGER.info("Restarting failed build(" + cause + ")........"
