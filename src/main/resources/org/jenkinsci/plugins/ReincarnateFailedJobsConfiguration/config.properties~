@@ -1,7 +1,0 @@
-title.configtitle=Periodic Reincarnation of failed builds
-title.enabledisable=Enable/Disable
-title.crontime=Cron Time
-title.regularexpressions=Regular Expressions
-titel.regex=RegEx
-title.showlog=Show info in log
-title.restartstablewithnochange=Restart unchanged builds failing for the first time
