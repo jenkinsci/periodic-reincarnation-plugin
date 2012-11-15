@@ -11,11 +11,8 @@
   	<name> Periodic Reincarnation of failed jobs </name>	
   	<groupId>org.jenkins-ci.plugins</groupId>
   	<artifactId>periodic-reincarnation</artifactId>
-<<<<<<< HEAD
- 	<version>1.1</version>
-=======
+
  	<version>1.1-SNAPSHOT</version>
->>>>>>> fbef9b5a2623dc88c6ecebada0a9691f2f17d84d
   	<packaging>hpi</packaging>
   	<url>http://wiki.jenkins-ci.org/display/JENKINS/Periodic+Reincarnation+Plugin</url>
   	
