@@ -18,8 +18,12 @@ xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
             			<f:textbox name="regExprs.value" value="${regExprs.getValue()}" />
           	 		</f:entry>
           
-         			<f:entry title="${%title.action}">
-            			<f:textarea name="regExprs.action" value="${regExprs.getAction()}" />
+         			<f:entry title="${%title.nodeAction}">
+            			<f:textarea name="regExprs.nodeAction" value="${regExprs.getNodeAction()}" />
+          	 		</f:entry>
+
+         			<f:entry title="${%title.masterAction}">
+            			<f:textarea name="regExprs.masterAction" value="${regExprs.getMasterAction()}" />
           	 		</f:entry>
 
           			<f:entry title="">

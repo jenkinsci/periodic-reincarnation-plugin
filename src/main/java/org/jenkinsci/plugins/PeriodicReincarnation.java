@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import hudson.model.*;
 import hudson.util.RemotingDiagnostics;
+import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.ReincarnateFailedJobsConfiguration.RegEx;
 
 import antlr.ANTLRException;
@@ -70,7 +71,6 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
                 final CronTab cronTab = new CronTab(cron);
                 final long currentTime = System.currentTimeMillis();
-                Run lastBuild;
                 RegEx regEx;
 
                 if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0
@@ -81,6 +81,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                     for (final Iterator<?> i = projectList.iterator(); i
                             .hasNext();) {
                         final Project<?, ?> project = (Project<?, ?>) i.next();
+                        //TODO: jeff race condition with last build
                         if (project != null
                                 && project instanceof BuildableItem
                                 && project.getLastBuild() != null
@@ -94,7 +95,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                             if (regEx != null) {
                                 this.restart(project, config, "Restarting due to this regex: " + regEx.getValue()
                                         + " was found in the build output");
-                                this.execAction(project, config, regEx.getAction());
+                                this.execAction(project, config, regEx.getNodeAction(), regEx.getMasterAction());
                             } else if (config.isRestartUnchangedJobsEnabled()
                                     && qualifyForUnchangedRestart(project)) {
                                 this.restart(project, config,
@@ -108,6 +109,12 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
             } catch (ANTLRException e) {
                 LOGGER.warning("Could not parse the given cron tab. Check for type errors: "
                         + e.getMessage());
+            } catch (InterruptedException e) {
+                LOGGER.warning("Could not parse the given cron tab. Check for type errors: "
+                        + e.getMessage());
+            } catch (IOException e) {
+                LOGGER.warning("Could not parse the given cron tab. Check for type errors: "
+                        + e.getMessage());
             }
         } else {
             LOGGER.warning("Cron time is not configured.");
@@ -115,30 +122,37 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
 
-    private void execAction(Project<?, ?> project, ReincarnateFailedJobsConfiguration config, String action) {
+    private void execAction(Project<?, ?> project, ReincarnateFailedJobsConfiguration config, String nodeAction, String masterAction) throws IOException, InterruptedException {
         Node node = project.getLastBuild().getBuiltOn();
-        Executor executor = project.getLastBuild().getExecutor();
-        Computer computer = node.toComputer();
+        Computer slave = node.toComputer();
 
         try {
-            RemotingDiagnostics.executeGroovy(action, computer.getChannel());
+            RemotingDiagnostics.executeGroovy(nodeAction, slave.getChannel());
         } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            String message = "Error: " + e.getMessage() + "there were problems executing script in "
+                    + slave.getName()
+                    + " script: " + nodeAction;
+            LOGGER.warning(message);
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            String message = "Error: " + e.getMessage() + "there were problems executing script in "
+                    + slave.getName()
+                    + " script: " + nodeAction;
+            LOGGER.warning(message);
         }
 
-        /**
-         * RemotingDiagnostics.executeGroovy(text,getChannel()));
-         */
+        masterAction = "slave_name = " + slave.getName() + " \n" + masterAction;
 
-        /*
-        String[] lines = action.split("\\r?\\n");
-        for(String line : lines){
+        try {
+            RemotingDiagnostics.executeGroovy(masterAction, Jenkins.MasterComputer.localChannel);
+        } catch (IOException e) {
+            String message = "Error: " + e.getMessage() + "there were problems executing script in "
+                    + "the master node. Script: " + masterAction;
+            LOGGER.warning(message);
+        } catch (InterruptedException e) {
+            String message = "Error: " + e.getMessage() + "there were problems executing script in "
+                    + "the master node. Script: " + masterAction;
+            LOGGER.warning(message);
         }
-
-        project.getLastBuild().getExecutor().
-        */
     }
 
     /**

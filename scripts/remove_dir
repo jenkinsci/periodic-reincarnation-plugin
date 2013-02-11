@@ -1,0 +1,2 @@
+new File("D:/tmp/removeme").deleteDir()
+new File("workspace").deleteDir()
