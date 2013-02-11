@@ -1,10 +1,9 @@
 //slave_name = "local";
-hudson.slaves.OfflineCause.ByCLI c = new hudson.slaves.OfflineCause.ByCLI("coz I can")
-  
+hudson.slaves.OfflineCause.ByCLI cause = new hudson.slaves.OfflineCause.ByCLI("coz I need")
+
 for (aSlave in hudson.model.Hudson.instance.slaves) {
   if (aSlave.name.equals(slave_name )){
         println "disconnecting: " + aSlave.name;
-        aSlave.getComputer().setTemporarilyOffline(true, c);
+        aSlave.getComputer().setTemporarilyOffline(true, cause);
   }
-  
 }

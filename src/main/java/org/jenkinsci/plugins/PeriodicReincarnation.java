@@ -122,10 +122,13 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
 
-    private void execAction(Project<?, ?> project, ReincarnateFailedJobsConfiguration config, String nodeAction, String masterAction) throws IOException, InterruptedException {
+    private void execAction(Project<?, ?> project, ReincarnateFailedJobsConfiguration config, String nodeAction,
+                            String masterAction) throws IOException, InterruptedException
+    {
         Node node = project.getLastBuild().getBuiltOn();
         Computer slave = node.toComputer();
 
+        LOGGER.info("executing script " + nodeAction + " in node: " + slave.getName());
         try {
             RemotingDiagnostics.executeGroovy(nodeAction, slave.getChannel());
         } catch (IOException e) {
@@ -140,8 +143,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
             LOGGER.warning(message);
         }
 
-        masterAction = "slave_name = " + slave.getName() + " \n" + masterAction;
-
+        masterAction = "slave_name = " + slave.getName() + "; \n" + masterAction;
+        LOGGER.info("executing script " + masterAction + " in master.");
         try {
             RemotingDiagnostics.executeGroovy(masterAction, Jenkins.MasterComputer.localChannel);
         } catch (IOException e) {
