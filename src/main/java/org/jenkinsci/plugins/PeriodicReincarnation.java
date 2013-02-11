@@ -10,20 +10,14 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import hudson.model.*;
+import hudson.util.RemotingDiagnostics;
 import org.jenkinsci.plugins.ReincarnateFailedJobsConfiguration.RegEx;
 
 import antlr.ANTLRException;
 
 import hudson.AbortException;
 import hudson.Extension;
-import hudson.model.AsyncPeriodicWork;
-import hudson.model.BuildableItem;
-import hudson.model.Result;
-import hudson.model.AbstractBuild;
-import hudson.model.Hudson;
-import hudson.model.Project;
-import hudson.model.Run;
-import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
 import hudson.util.IOUtils;
 import hudson.util.RunList;
@@ -33,9 +27,9 @@ import hudson.util.RunList;
  * every minute but further functionality and restart of failed jobs happens
  * only when the time specified in the cron tab overlaps with the current
  * minute.
- * 
+ *
  * @author yboev
- * 
+ *
  */
 @Extension
 public class PeriodicReincarnation extends AsyncPeriodicWork {
@@ -76,6 +70,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
                 final CronTab cronTab = new CronTab(cron);
                 final long currentTime = System.currentTimeMillis();
+                Run lastBuild;
+                RegEx regEx;
 
                 if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0
                         && isActive) {
@@ -90,11 +86,15 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                                 && project.getLastBuild() != null
                                 && project.getLastBuild().getResult() != null
                                 && project.getLastBuild().getResult()
-                                        .isWorseOrEqualTo(Result.FAILURE)
+                                .isWorseOrEqualTo(Result.FAILURE)
                                 && !project.isBuilding()
-                                && !project.isInQueue()) {
-                            if (checkRegExprs(project.getLastBuild())) {
-                                this.restart(project, config, "reg ex hit");
+                                && !project.isInQueue())
+                        {
+                            regEx = checkBuild(project.getLastBuild());
+                            if (regEx != null) {
+                                this.restart(project, config, "Restarting due to this regex: " + regEx.getValue()
+                                        + " was found in the build output");
+                                this.execAction(project, config, regEx.getAction());
                             } else if (config.isRestartUnchangedJobsEnabled()
                                     && qualifyForUnchangedRestart(project)) {
                                 this.restart(project, config,
@@ -114,11 +114,38 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         }
     }
 
+
+    private void execAction(Project<?, ?> project, ReincarnateFailedJobsConfiguration config, String action) {
+        Node node = project.getLastBuild().getBuiltOn();
+        Executor executor = project.getLastBuild().getExecutor();
+        Computer computer = node.toComputer();
+
+        try {
+            RemotingDiagnostics.executeGroovy(action, computer.getChannel());
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        } catch (InterruptedException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+        /**
+         * RemotingDiagnostics.executeGroovy(text,getChannel()));
+         */
+
+        /*
+        String[] lines = action.split("\\r?\\n");
+        for(String line : lines){
+        }
+
+        project.getLastBuild().getExecutor().
+        */
+    }
+
     /**
      * Recurrence will occur every minute, but action will be taken according to
      * the cron time set in the configuration. Only when this minute and the
      * cron tab time overlap.
-     * 
+     *
      * @return The recurrence period in ms.
      */
     @Override
@@ -128,7 +155,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
     /**
      * Returns this AsyncTask.
-     * 
+     *
      * @return the instance of PeriodicReincarnation which is currently running
      */
     public static PeriodicReincarnation get() {
@@ -137,7 +164,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
     /**
      * Determines whether or not there were changes between two builds.
-     * 
+     *
      * @param build1
      *            First build.
      * @param build2
@@ -153,7 +180,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * If there were no changes between the last 2 builds of a project and the
      * last build failed but the previous didn't, then this project is being
      * restarted if this unchanged restart option is enabled.
-     * 
+     *
      * @param project
      *            the project.
      * @return true if it qualifies, false otherwise.
@@ -189,7 +216,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
     /**
      * Helper method for restarting a project.
-     * 
+     *
      * @param project
      *            the project.
      * @param config
@@ -198,7 +225,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      *            the cause for the restart.
      */
     private void restart(Project<?, ?> project,
-            ReincarnateFailedJobsConfiguration config, String cause) {
+                         ReincarnateFailedJobsConfiguration config, String cause) {
         project.scheduleBuild(new ReincarnateFailedBuildsCause(cause));
         if (config.isLogInfoEnabled()) {
 
@@ -209,34 +236,34 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
     /**
      * Checks if a certain build matches any of the given regular expressions.
-     * 
+     *
      * @param build
      *            the build.
-     * @return true if at least one match, false otherwise.
+     * @return RegEx object if at least one match, null otherwise.
      */
-    private boolean checkRegExprs(Run<?, ?> build) {
+    private RegEx checkBuild(Run<?, ?> build) {
         final ReincarnateFailedJobsConfiguration config = new ReincarnateFailedJobsConfiguration();
         final List<RegEx> regExprs = config.getRegExprs();
         if (regExprs == null || regExprs.size() == 0) {
-            return true;
+            return null;
         }
         for (final Iterator<RegEx> i = regExprs.iterator(); i.hasNext();) {
             final RegEx currentRegEx = i.next();
             try {
                 if (checkFile(build.getLogFile(), currentRegEx.getPattern(),
                         true)) {
-                    return true;
+                    return currentRegEx;
                 }
             } catch (AbortException e) {
                 e.printStackTrace();
             }
         }
-        return false;
+        return null;
     }
 
     /**
      * Searches for a given pattern in a given file.
-     * 
+     *
      * @param file
      *            the current file being checked.
      * @param pattern
@@ -244,11 +271,11 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * @param abortAfterFirstHit
      *            normally true, can be set to false in order to continue
      *            searching.
-     * 
+     *
      * @return True if reg ex was found in the file, false otherwise.
      */
     private boolean checkFile(File file, Pattern pattern,
-            boolean abortAfterFirstHit) {
+                              boolean abortAfterFirstHit) {
         if (pattern == null) {
             return false;
         }
