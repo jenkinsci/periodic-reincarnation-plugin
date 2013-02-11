@@ -1,2 +1,2 @@
-new File("/tmp/removeme").deleteDir()
-new File("workspace").deleteDir()
+new File("/tmp/removeme").deleteDir();
+new File("workspace").deleteDir();
