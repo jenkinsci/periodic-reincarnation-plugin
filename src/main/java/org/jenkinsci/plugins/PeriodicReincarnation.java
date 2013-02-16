@@ -152,8 +152,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
             LOGGER.warning(message);
         }
 
-        masterAction = "slave_name = " + slave.getName() + "; \n" + masterAction;
-        LOGGER.info("executing script " + masterAction + " in master.");
+        masterAction = "slave_name = " + "'" + slave.getName() + "'" + "; \n" + masterAction;
+        LOGGER.info("executing this script in master: \n " + masterAction + " in master.");
         try {
             RemotingDiagnostics.executeGroovy(masterAction, Jenkins.MasterComputer.localChannel);
         } catch (IOException e) {
