@@ -10,7 +10,16 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import hudson.model.*;
+import hudson.model.AsyncPeriodicWork;
+import hudson.model.BuildableItem;
+import hudson.model.Result;
+import hudson.model.AbstractBuild;
+import hudson.model.Hudson;
+import hudson.model.Project;
+import hudson.model.Run;
+import hudson.model.Node;
+import hudson.model.Computer;
+import hudson.model.TaskListener;
 import hudson.util.RemotingDiagnostics;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.ReincarnateFailedJobsConfiguration.RegEx;
@@ -50,7 +59,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
     /**
      * This method is called every minute.
-     *@param taskListener TaskListener 
+     *@param taskListener TaskListener
      */
     @Override
     protected void execute(TaskListener taskListener) {
