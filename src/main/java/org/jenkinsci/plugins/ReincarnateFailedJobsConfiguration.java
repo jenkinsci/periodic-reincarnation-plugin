@@ -205,14 +205,22 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
          * Value of the reg ex as String.
          */
         private String value;
-        
+
+        private String nodeAction;
+
+        private String masterAction;
+
         /**
          * Constructor. Creates a reg ex.
          * @param value the reg ex.
+         * @param nodeAction
+         * @param masterAction
          */
         @DataBoundConstructor
-        public RegEx(String value) {
+        public RegEx(String value, String nodeAction, String masterAction) {
             this.value = value;
+            this.nodeAction = nodeAction;
+            this.masterAction = masterAction;
         }
         
         /**
@@ -236,6 +244,14 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
                 throw new AbortException();
             }
             return pattern;
+        }
+
+        public String getNodeAction() {
+            return nodeAction;
+        }
+
+        public String getMasterAction() {
+            return masterAction;
         }
     }
 
