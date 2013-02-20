@@ -7,6 +7,7 @@ import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Result;
 
+import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
@@ -39,6 +40,7 @@ public class TestConfiguration extends HudsonTestCase {
      * @throws Exception exception.
      */
     @LocalData
+    @Test
     public void test1() throws Exception {
         final long reccurancePeriod = 60000;
         assertNotNull(PeriodicReincarnation.get());
