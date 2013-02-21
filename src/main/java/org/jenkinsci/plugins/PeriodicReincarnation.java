@@ -73,31 +73,23 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         }
 
         final String cron = config.getCronTime();
-        final boolean isActive = config.isActive();
-        if (!isActive) {
+        if (!config.isActive()) {
             return;
         }
         if (cron != null) {
             try {
-
                 final CronTab cronTab = new CronTab(cron);
                 final long currentTime = System.currentTimeMillis();
                 RegEx regEx;
 
-                if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0
-                        && isActive) {
-
-                    final List<?> projectList = Hudson.getInstance()
-                            .getProjects();
-                    for (final Iterator<?> i = projectList.iterator(); i
-                            .hasNext();) {
-                        final Project<?, ?> project = (Project<?, ?>) i.next();
+                if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
+                    for (Project<?, ?>project : Hudson.getInstance().getProjects()) {
                         // TODO: jeff race condition with last build
                         if (isValidCandidateForRestart(project)) {
                             regEx = checkBuild(project.getLastBuild());
                             if (regEx != null) {
                                 this.restart(project, config,
-                                        "RegEx hit in the console output: "
+                                        "RegEx hit in console output: "
                                                 + regEx.getValue());
                                 this.execAction(project, config,
                                         regEx.getNodeAction(),
@@ -108,7 +100,6 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                                         "No difference between last two builds");
                             }
                         }
-
                     }
                 }
 
@@ -285,9 +276,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
             ReincarnateFailedJobsConfiguration config, String cause) {
         project.scheduleBuild(new ReincarnateFailedBuildsCause(cause));
         if (config.isLogInfoEnabled()) {
-
-            LOGGER.info("Restarting failed build(" + cause + ")........"
-                    + project.getDisplayName());
+            LOGGER.info("Restarting project "
+                    + project.getDisplayName() + "....." + cause);
         }
     }
 
