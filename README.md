@@ -19,4 +19,4 @@ It is easy to periodically restart all jobs that have failed because of some arb
 
 The configuration for this plugin can be found in the global configuration page of Jenkins under "Periodic Reincarnation of failed builds".
 
-Example of Groovy scripts can be found here: https://github.com/deccico/periodic-reincarnation-plugin/tree/master/scripts
+Example of Groovy scripts can be found here: https://github.com/jenkinsci/periodic-reincarnation-plugin/tree/master/scripts

@@ -35,7 +35,12 @@
 			<name>Yordan Boev</name>
 			<email>iordan.boev@gmail.com</email>
         </developer>
-  	</developers>
+        <developer>
+            <id>deccico</id>
+            <name>Adrián Deccico</name>
+            <email>deccico@gmail.com</email>
+        </developer>
+    </developers>
   	
 	<scm>
     	<connection> scm:git:ssh://github.com/jenkinsci/periodic-reincarnation-plugin.git </connection>
