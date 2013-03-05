@@ -84,7 +84,6 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
                 if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
                     for (Project<?, ?>project : Hudson.getInstance().getProjects()) {
-                        // TODO: jeff race condition with last build
                         if (isValidCandidateForRestart(project)) {
                             regEx = checkBuild(project.getLastBuild());
                             if (regEx != null) {
@@ -126,6 +125,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * @return true should be tested, false otherwise
      */
     private boolean isValidCandidateForRestart(final Project<?, ?> project) {
+        // TODO: possible race condition with last build variable
         return project != null
                 && project instanceof BuildableItem
                 && project.getLastBuild() != null
@@ -155,7 +155,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         final Node node = project.getLastBuild().getBuiltOn();
         final Computer slave = node.toComputer();
 
-        LOGGER.info("executing script " + nodeAction + " in node: "
+        LOGGER.info("executing script in node: " + slave.getName());
+        LOGGER.fine("executing script " + nodeAction + " in node: "
                 + slave.getName());
         try {
             RemotingDiagnostics.executeGroovy(nodeAction, slave.getChannel());
@@ -173,7 +174,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
         masterAction = "slave_name = " + "'" + slave.getName() + "'" + "; \n"
                 + masterAction;
-        LOGGER.info("executing this script in master: \n " + masterAction
+        LOGGER.info("executing script in master.");
+        LOGGER.fine("executing this script in master: \n " + masterAction
                 + " in master.");
         try {
             RemotingDiagnostics.executeGroovy(masterAction,
