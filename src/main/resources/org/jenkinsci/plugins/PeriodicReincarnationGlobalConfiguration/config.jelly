@@ -2,9 +2,15 @@
 xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   	
   	<f:section title="${%title.configtitle}">
-  		<f:entry title="${%title.enabledisable}" field="active">
-			<f:checkbox checked="${it.getActive()}"/>
+	 	<f:entry title="${%title.enabledisabletrigger}" >
+			<f:checkbox field="activeTrigger" checked="${it.getActiveTrigger()}"/>
+			Max restart depth: <f:textbox field="maxDepth" value="${it.getMaxDepth()}" style="width: 50px" />
 	 	</f:entry>
+
+  		<f:entry title="${%title.enabledisablecron}" field="activeCron">
+			<f:checkbox checked="${it.getActiveCron()}"/>
+	 	</f:entry>
+	 	
 		
 		<f:entry title="${%title.crontime}" help="/plugin/periodic-reincarnation/cron-time-help.html" field="cronTime">
 			<f:textbox />
@@ -39,10 +45,10 @@ xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   		<f:entry title="${%title.restartstablewithnochange}" help="/plugin/periodic-reincarnation/stable-without-change-help.html" field="noChange">
 			<f:checkbox checked="${it.getNoChange()}"/>
 	 	</f:entry>
-  		
+  		<!--
   		<f:entry title="${%title.showlog}" help="/plugin/periodic-reincarnation/show-log-help.html" field="logInfo">
 			<f:checkbox checked="${it.getLogInfo()}"/>
 	 	</f:entry>
-	 	
+	 	-->
 	</f:section> 
 </j:jelly>

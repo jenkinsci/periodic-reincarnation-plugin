@@ -8,20 +8,20 @@ import hudson.model.Cause;
  * @author yboev
  * 
  */
-public class ReincarnateFailedBuildsCause extends Cause {
+public class PeriodicReincarnationBuildCause extends Cause {
     /**
      * Cause of restart for a certain job.
      */
     private String restartCause;
 
     /**
-     * Constructor. Also adds the reason why this particular job has bee
+     * Constructor. Also adds the reason why this particular job has been
      * restarted.
      * 
      * @param s
      *            the reason/cause of restart.
      */
-    public ReincarnateFailedBuildsCause(String s) {
+    public PeriodicReincarnationBuildCause(String s) {
         super();
         this.restartCause = s;
     }

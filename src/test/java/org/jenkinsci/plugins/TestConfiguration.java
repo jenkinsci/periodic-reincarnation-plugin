@@ -29,7 +29,7 @@ public class TestConfiguration extends HudsonTestCase {
     /**
      * The global configuration.
      */
-    private ReincarnateFailedJobsConfiguration config;
+    private PeriodicReincarnationGlobalConfiguration config;
     /**
      * The HTML form.
      */
@@ -46,7 +46,7 @@ public class TestConfiguration extends HudsonTestCase {
         assertNotNull(PeriodicReincarnation.get());
         final String s = "reg ex hit";
         assertEquals("PeriodicReincarnation - " + s,
-                new ReincarnateFailedBuildsCause(s).getShortDescription());
+                new PeriodicReincarnationBuildCause(s).getShortDescription());
         assertEquals(reccurancePeriod, PeriodicReincarnation.get().getRecurrencePeriod());
 
         final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem("test_job");
@@ -66,13 +66,14 @@ public class TestConfiguration extends HudsonTestCase {
         assertNotNull("Cron Time is null!", cronTime);
         cronTime.setValueAttribute("* * * * *");
 
-        final HtmlInput active = form.getInputByName("_.active");
-        assertNotNull("EnableDisable field is null!", active);
-        active.setChecked(true);
+        final HtmlInput activeCron = form.getInputByName("_.activeCron");
+        assertNotNull("EnableDisable cron field is null!", activeCron);
+        activeCron.setChecked(true);
+        
+        final HtmlInput activeTrigger = form.getInputByName("_.activeTrigger");
+        assertNotNull("EnableDisable trigger field is null!", activeTrigger);
+        activeTrigger.setChecked(false);
 
-        final HtmlInput logInfo = form.getInputByName("_.logInfo");
-        assertNotNull("Log info checkbox is null!", logInfo);
-        logInfo.setChecked(true);
 
         final HtmlInput noChange = form.getInputByName("_.noChange");
         assertNotNull("NoChange checkbox was null!", noChange);
@@ -90,17 +91,17 @@ public class TestConfiguration extends HudsonTestCase {
         regEx1.setValueAttribute("reg ex one");
 
         submit(form);
-        config = new ReincarnateFailedJobsConfiguration();
+        config = new PeriodicReincarnationGlobalConfiguration();
         assertNotNull(config);
         assertEquals("* * * * *", config.getCronTime());
-        assertEquals("true", config.getActive());
-        assertTrue(config.isActive());
+        assertEquals("true", config.getActiveCron());
+        assertTrue(config.isActiveCron());
         assertEquals(1, config.getRegExprs().size());
         assertEquals("reg ex one", config.getRegExprs().get(0).getValue());
         assertEquals("true", config.getNoChange());
         assertTrue(config.isRestartUnchangedJobsEnabled());
-        assertEquals("true", config.getLogInfo());
-        assertTrue(config.isLogInfoEnabled());
+        //assertEquals("true", config.getLogInfo());
+        //assertTrue(config.isLogInfoEnabled());
     }
 
     /**
@@ -119,7 +120,6 @@ public class TestConfiguration extends HudsonTestCase {
         assertTrue(allElements.contains("Cron Time"));
         assertTrue(allElements.contains("Periodic Reincarnation"));
         assertTrue(allElements.contains("Regular Expressions"));
-        assertTrue(allElements.contains("Show Info in Log"));
         assertTrue(allElements.contains("Enable/Disable"));
         assertTrue(allElements
                 .contains("Restart unchanged builds failing for the first time"));

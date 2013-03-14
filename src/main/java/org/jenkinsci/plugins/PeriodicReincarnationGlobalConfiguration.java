@@ -28,12 +28,16 @@ import jenkins.model.GlobalConfiguration;
  * 
  */
 @Extension
-public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
+public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguration {
 
     /**
-     * Shows if the plugin is active or disabled.
+     * Shows if the cron restart of failed jobs is active or disabled.
      */
-    private String active;
+    private String activeCron;
+    /**
+     * Shows if the afterbuild restart of failed jobs is active or disabled.
+     */
+    private String activeTrigger;
     /**
      * Contains the cron time set in the configuration.
      */
@@ -43,9 +47,13 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
      */
     private List<RegEx> regExprs;
     /**
+     * maximal restart depth for afterbuild restarts.
+     */
+    private String maxDepth;
+    /**
      * Shows if info should be printed to the log or not.
      */
-    private String logInfo;
+    //private String logInfo;
     /**
      * Shows if the option to restart jobs that have failed in their last build
      * but succeeded in their second last and have no change between these two
@@ -56,7 +64,7 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
     /**
      * Constructor. Loads the configuration upon invoke.
      */
-    public ReincarnateFailedJobsConfiguration() {
+    public PeriodicReincarnationGlobalConfiguration() {
         load();
     }
 
@@ -76,12 +84,14 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
      *            shows if no change option is enabled or disabled.
      */
     @DataBoundConstructor
-    public ReincarnateFailedJobsConfiguration(String active, String cronTime,
-            List<RegEx> regExprs, String logInfo, String noChange) {
-        this.active = active;
+    public PeriodicReincarnationGlobalConfiguration(String activeTrigger, String maxDepth, String activeCron, String cronTime,
+            List<RegEx> regExprs, String noChange) {
+        this.activeTrigger = activeTrigger;
+        this.maxDepth = maxDepth;
+        this.activeCron = activeCron;
         this.cronTime = cronTime;
         this.regExprs = regExprs;
-        this.logInfo = logInfo;
+        //this.logInfo = logInfo;
         this.noChange = noChange;
     }
 
@@ -94,11 +104,13 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
     @Override
     public boolean configure(StaplerRequest req, JSONObject json)
             throws FormException {
-        this.regExprs = req.bindJSON(ReincarnateFailedJobsConfiguration.class,
+        this.regExprs = req.bindJSON(PeriodicReincarnationGlobalConfiguration.class,
                 json).regExprs;
-        this.active = json.getString("active").trim();
+        this.activeTrigger = json.getString("activeTrigger").trim();
+        this.maxDepth = json.getString("maxDepth").trim();
+        this.activeCron = json.getString("activeCron").trim();
         this.cronTime = json.getString("cronTime");
-        this.logInfo = json.getString("logInfo");
+        //this.logInfo = json.getString("logInfo");
         this.noChange = json.getString("noChange");
         save();
         return true;
@@ -126,9 +138,9 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
      * Finds and returns the configuration class.
      * @return the ReincarnateFailedJobsConfiguration.
      */
-    public static ReincarnateFailedJobsConfiguration get() {
+    public static PeriodicReincarnationGlobalConfiguration get() {
         return GlobalConfiguration.all().get(
-                ReincarnateFailedJobsConfiguration.class);
+                PeriodicReincarnationGlobalConfiguration.class);
     }
 
     /**
@@ -151,17 +163,18 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
      * Returns the field logInfo.
      * @return logInfo.
      */
-    public String getLogInfo() {
+    /*public String getLogInfo() {
         return this.logInfo;
     }
+    */
 
     /**
      * Tells if printing in log is enabled or not.
      * @return true if enabled, false otherwise.
      */
-    public boolean isLogInfoEnabled() {
+    /*public boolean isLogInfoEnabled() {
         return (this.logInfo != null && this.logInfo.equals("true"));
-    }
+    }*/
 
     /**
      * Returns a list containing all regular expressions.
@@ -180,19 +193,46 @@ public class ReincarnateFailedJobsConfiguration extends GlobalConfiguration {
     }
 
     /**
-     * Returns the field active.
-     * @return active.
+     * Returns the field activeCron.
+     * @return activeCron.
      */
-    public String getActive() {
-        return this.active;
+    public String getActiveCron() {
+        return this.activeCron;
     }
     
     /**
-     * Tells if the plugin is activated or not.
+     * Tells if the cron restart is activated or not.
      * @return true if activated, false otherwise.
      */
-    public boolean isActive() {
-        return (this.active != null && this.active.equals("true"));
+    public boolean isActiveCron() {
+        return (this.activeCron != null && this.activeCron.equals("true"));
+    }
+    
+    /**
+     * Returns the field activeTrigger.
+     * @return activeTrigger.
+     */
+    public String getActiveTrigger() {
+        return this.activeTrigger;
+    }
+    
+    /**
+     * Tells if the afterbuild restart is activated or not.
+     * @return true if activated, false otherwise.
+     */
+    public boolean isTriggerActive() {
+        return (this.activeTrigger != null && this.activeTrigger.equals("true"));
+    }
+    
+    /**
+     * returns the maximal number of consecutive afterbuild retries.
+     * @return the number from the configuration as String
+     */
+    public String getMaxDepth() {
+        if(this.maxDepth == "" || this.maxDepth == null) {
+            return "0";
+        }
+        return this.maxDepth;
     }
     
     /**
