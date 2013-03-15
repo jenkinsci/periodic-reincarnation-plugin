@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins;
+package org.jenkinsci.plugins.periodicreincarnation;
 
 import hudson.model.Cause;
 

@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins;
+package org.jenkinsci.plugins.periodicreincarnationtest;
 
 
 import java.io.IOException;
@@ -7,6 +7,9 @@ import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Result;
 
+import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnation;
+import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationBuildCause;
+import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalConfiguration;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;

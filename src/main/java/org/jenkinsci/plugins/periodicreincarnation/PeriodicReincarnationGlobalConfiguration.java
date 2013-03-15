@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins;
+package org.jenkinsci.plugins.periodicreincarnation;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -28,7 +28,8 @@ import jenkins.model.GlobalConfiguration;
  * 
  */
 @Extension
-public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguration {
+public class PeriodicReincarnationGlobalConfiguration extends
+        GlobalConfiguration {
 
     /**
      * Shows if the cron restart of failed jobs is active or disabled.
@@ -53,7 +54,7 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
     /**
      * Shows if info should be printed to the log or not.
      */
-    //private String logInfo;
+    // private String logInfo;
     /**
      * Shows if the option to restart jobs that have failed in their last build
      * but succeeded in their second last and have no change between these two
@@ -84,33 +85,33 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
      *            shows if no change option is enabled or disabled.
      */
     @DataBoundConstructor
-    public PeriodicReincarnationGlobalConfiguration(String activeTrigger, String maxDepth, String activeCron, String cronTime,
+    public PeriodicReincarnationGlobalConfiguration(String activeTrigger,
+            String maxDepth, String activeCron, String cronTime,
             List<RegEx> regExprs, String noChange) {
         this.activeTrigger = activeTrigger;
         this.maxDepth = maxDepth;
         this.activeCron = activeCron;
         this.cronTime = cronTime;
         this.regExprs = regExprs;
-        //this.logInfo = logInfo;
+        // this.logInfo = logInfo;
         this.noChange = noChange;
     }
 
     /**
-     * {@inheritDoc}
-     * This method defines what happens when we save to configuration. All
-     * values are taken from the json file and set to the variabled in this
-     * class.
+     * {@inheritDoc} This method defines what happens when we save to
+     * configuration. All values are taken from the json file and set to the
+     * variabled in this class.
      */
     @Override
     public boolean configure(StaplerRequest req, JSONObject json)
             throws FormException {
-        this.regExprs = req.bindJSON(PeriodicReincarnationGlobalConfiguration.class,
-                json).regExprs;
+        this.regExprs = req.bindJSON(
+                PeriodicReincarnationGlobalConfiguration.class, json).regExprs;
         this.activeTrigger = json.getString("activeTrigger").trim();
         this.maxDepth = json.getString("maxDepth").trim();
         this.activeCron = json.getString("activeCron").trim();
         this.cronTime = json.getString("cronTime");
-        //this.logInfo = json.getString("logInfo");
+        // this.logInfo = json.getString("logInfo");
         this.noChange = json.getString("noChange");
         save();
         return true;
@@ -133,9 +134,10 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
             return FormValidation.error("Cron time was null");
         }
     }
-    
+
     /**
      * Finds and returns the configuration class.
+     * 
      * @return the ReincarnateFailedJobsConfiguration.
      */
     public static PeriodicReincarnationGlobalConfiguration get() {
@@ -145,6 +147,7 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
 
     /**
      * Returns the field noChange.
+     * 
      * @return the field noChange.
      */
     public String getNoChange() {
@@ -153,31 +156,35 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
 
     /**
      * See {@code noChange}.
+     * 
      * @return true if the option is enabled, false otherwise.
      */
     public boolean isRestartUnchangedJobsEnabled() {
         return (this.noChange != null && this.noChange.equals("true"));
     }
-    
+
     /**
      * Returns the field logInfo.
+     * 
      * @return logInfo.
      */
-    /*public String getLogInfo() {
-        return this.logInfo;
-    }
-    */
+    /*
+     * public String getLogInfo() { return this.logInfo; }
+     */
 
     /**
      * Tells if printing in log is enabled or not.
+     * 
      * @return true if enabled, false otherwise.
      */
-    /*public boolean isLogInfoEnabled() {
-        return (this.logInfo != null && this.logInfo.equals("true"));
-    }*/
+    /*
+     * public boolean isLogInfoEnabled() { return (this.logInfo != null &&
+     * this.logInfo.equals("true")); }
+     */
 
     /**
      * Returns a list containing all regular expressions.
+     * 
      * @return the list with reg exs.
      */
     public List<RegEx> getRegExprs() {
@@ -186,6 +193,7 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
 
     /**
      * Returns the field cron time.
+     * 
      * @return cronTime.
      */
     public String getCronTime() {
@@ -194,51 +202,59 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
 
     /**
      * Returns the field activeCron.
+     * 
      * @return activeCron.
      */
     public String getActiveCron() {
         return this.activeCron;
     }
-    
+
     /**
      * Tells if the cron restart is activated or not.
+     * 
      * @return true if activated, false otherwise.
      */
     public boolean isActiveCron() {
         return (this.activeCron != null && this.activeCron.equals("true"));
     }
-    
+
     /**
      * Returns the field activeTrigger.
+     * 
      * @return activeTrigger.
      */
     public String getActiveTrigger() {
         return this.activeTrigger;
     }
-    
+
     /**
      * Tells if the afterbuild restart is activated or not.
+     * 
      * @return true if activated, false otherwise.
      */
     public boolean isTriggerActive() {
         return (this.activeTrigger != null && this.activeTrigger.equals("true"));
     }
-    
+
     /**
      * returns the maximal number of consecutive afterbuild retries.
+     * 
      * @return the number from the configuration as String
      */
-    public String getMaxDepth() {
-        if(this.maxDepth == "" || this.maxDepth == null) {
-            return "0";
+    public int getMaxDepth() {
+        try {
+            Integer.parseInt(this.maxDepth);
+        } catch (NumberFormatException e) {
+            this.maxDepth = "0";
         }
-        return this.maxDepth;
+        return Integer.parseInt(this.maxDepth);
     }
-    
+
     /**
      * Class for handling regular expressions.
+     * 
      * @author yboev
-     *
+     * 
      */
     public static class RegEx {
         /**
@@ -252,7 +268,9 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
 
         /**
          * Constructor. Creates a reg ex.
-         * @param value the reg ex.
+         * 
+         * @param value
+         *            the reg ex.
          * @param nodeAction
          * @param masterAction
          */
@@ -262,9 +280,10 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
             this.nodeAction = nodeAction;
             this.masterAction = masterAction;
         }
-        
+
         /**
          * Returns this reg ex.
+         * 
          * @return the reg ex value.
          */
         public String getValue() {
@@ -273,8 +292,10 @@ public class PeriodicReincarnationGlobalConfiguration extends GlobalConfiguratio
 
         /**
          * Returns the pattern correspondin to this reg ex.
+         * 
          * @return the pattern.
-         * @throws AbortException if the pattern could not be compiled.
+         * @throws AbortException
+         *             if the pattern could not be compiled.
          */
         public Pattern getPattern() throws AbortException {
             Pattern pattern;

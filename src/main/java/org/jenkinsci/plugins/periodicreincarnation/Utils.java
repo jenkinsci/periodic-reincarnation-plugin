@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins;
+package org.jenkinsci.plugins.periodicreincarnation;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 import jenkins.model.Jenkins;
 
-import org.jenkinsci.plugins.PeriodicReincarnationGlobalConfiguration.RegEx;
+import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalConfiguration.RegEx;
 
 import hudson.AbortException;
 import hudson.model.AbstractBuild;
