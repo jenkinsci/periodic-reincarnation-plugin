@@ -1,8 +1,7 @@
 package org.jenkinsci.plugins.periodicreincarnationtest;
 
-
 import java.io.IOException;
-
+import antlr.ANTLRException;
 import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Result;
@@ -10,10 +9,12 @@ import hudson.model.Result;
 import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnation;
 import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationBuildCause;
 import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalConfiguration;
+import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
+
 
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.gargoylesoftware.htmlunit.html.HtmlForm;
@@ -24,11 +25,12 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 
 /**
  * Test class.
+ * 
  * @author yboev
- *
+ * 
  */
 public class TestConfiguration extends HudsonTestCase {
-    
+
     /**
      * The global configuration.
      */
@@ -40,7 +42,9 @@ public class TestConfiguration extends HudsonTestCase {
 
     /**
      * TestCase.
-     * @throws Exception exception.
+     * 
+     * @throws Exception
+     *             exception.
      */
     @LocalData
     @Test
@@ -50,15 +54,18 @@ public class TestConfiguration extends HudsonTestCase {
         final String s = "reg ex hit";
         assertEquals("PeriodicReincarnation - " + s,
                 new PeriodicReincarnationBuildCause(s).getShortDescription());
-        assertEquals(reccurancePeriod, PeriodicReincarnation.get().getRecurrencePeriod());
+        assertEquals(reccurancePeriod, PeriodicReincarnation.get()
+                .getRecurrencePeriod());
 
-        final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem("test_job");
+        final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem(
+                "test_job");
         assertNotNull("job missing.. @LocalData problem?", job1);
         assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
         System.out.println("JOB1 LOG:"
                 + job1.getLastBuild().getLogFile().toString());
 
-        final Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem("no_change");
+        final Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem(
+                "no_change");
         assertNotNull("job missing.. @LocalData problem?", job2);
         assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
         assertNotNull(job2.getLastSuccessfulBuild());
@@ -72,15 +79,14 @@ public class TestConfiguration extends HudsonTestCase {
         final HtmlInput activeCron = form.getInputByName("_.activeCron");
         assertNotNull("EnableDisable cron field is null!", activeCron);
         activeCron.setChecked(true);
-        
+
         final HtmlInput activeTrigger = form.getInputByName("_.activeTrigger");
         assertNotNull("EnableDisable trigger field is null!", activeTrigger);
         activeTrigger.setChecked(true);
-        
-        final HtmlTextInput maxDepth = form.getInputByName("_.maxDepth");
-        assertNotNull("EnableDisable trigger field is null!", activeTrigger);
-        maxDepth.setValueAttribute("2");
 
+        final HtmlTextInput maxDepth = form.getInputByName("_.maxDepth");
+        assertNotNull("EnableDisable trigger field is null!", maxDepth);
+        maxDepth.setValueAttribute("2");
 
         final HtmlInput noChange = form.getInputByName("_.noChange");
         assertNotNull("NoChange checkbox was null!", noChange);
@@ -101,9 +107,19 @@ public class TestConfiguration extends HudsonTestCase {
         config = new PeriodicReincarnationGlobalConfiguration();
         assertNotNull(config);
         assertEquals("* * * * *", config.getCronTime());
+        try {
+            config.doCheckCronTime();
+        } catch (ANTLRException e) {
+            Assert.fail();
+        } catch (NullPointerException e2) {
+            Assert.fail();
+        }
+
         assertEquals("true", config.getActiveCron());
         assertTrue(config.isCronActive());
         assertTrue(config.isTriggerActive());
+        assertEquals("true", config.getActiveCron());
+        assertEquals("true", config.getActiveTrigger());
         assertEquals(1, config.getRegExprs().size());
         assertEquals("reg ex one", config.getRegExprs().get(0).getValue());
         assertEquals("true", config.getNoChange());
@@ -127,9 +143,11 @@ public class TestConfiguration extends HudsonTestCase {
         assertTrue(allElements.contains("Cron Time"));
         assertTrue(allElements.contains("Periodic Reincarnation"));
         assertTrue(allElements.contains("Max restart depth"));
-        assertTrue(allElements.contains("Enable/Disable afterbuild job reincarnation"));
+        assertTrue(allElements
+                .contains("Enable/Disable afterbuild job reincarnation"));
         assertTrue(allElements.contains("Regular Expressions"));
-        assertTrue(allElements.contains("Enable/Disable cron job reincarnation"));
+        assertTrue(allElements
+                .contains("Enable/Disable cron job reincarnation"));
         assertTrue(allElements
                 .contains("Restart unchanged builds failing for the first time"));
 

@@ -123,7 +123,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * 
      * @return Returns ok if cron time was correct, error message otherwise.
      */
-    public FormValidation doCheckCronTime() {
+    public FormValidation doCheckCronTime() throws ANTLRException, NullPointerException {
         try {
             new CronTab(cronTime);
             return FormValidation.ok();
