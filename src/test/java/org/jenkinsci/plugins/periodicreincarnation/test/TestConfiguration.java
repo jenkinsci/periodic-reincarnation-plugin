@@ -1,4 +1,4 @@
-package org.jenkinsci.plugins.periodicreincarnationtest;
+package org.jenkinsci.plugins.periodicreincarnation.test;
 
 
 import java.io.IOException;
