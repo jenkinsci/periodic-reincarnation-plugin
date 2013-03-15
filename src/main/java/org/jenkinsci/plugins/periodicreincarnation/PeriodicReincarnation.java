@@ -58,7 +58,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         }
 
         final String cron = config.getCronTime();
-        if (!config.isActiveCron()) {
+        if (!config.isCronActive()) {
             return;
         }
         if (cron != null) {

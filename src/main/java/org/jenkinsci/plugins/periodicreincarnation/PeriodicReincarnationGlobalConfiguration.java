@@ -214,7 +214,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * 
      * @return true if activated, false otherwise.
      */
-    public boolean isActiveCron() {
+    public boolean isCronActive() {
         return (this.activeCron != null && this.activeCron.equals("true"));
     }
 

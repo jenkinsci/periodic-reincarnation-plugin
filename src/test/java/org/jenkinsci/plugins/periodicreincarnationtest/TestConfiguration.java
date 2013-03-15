@@ -75,7 +75,11 @@ public class TestConfiguration extends HudsonTestCase {
         
         final HtmlInput activeTrigger = form.getInputByName("_.activeTrigger");
         assertNotNull("EnableDisable trigger field is null!", activeTrigger);
-        activeTrigger.setChecked(false);
+        activeTrigger.setChecked(true);
+        
+        final HtmlTextInput maxDepth = form.getInputByName("_.maxDepth");
+        assertNotNull("EnableDisable trigger field is null!", activeTrigger);
+        maxDepth.setValueAttribute("2");
 
 
         final HtmlInput noChange = form.getInputByName("_.noChange");
@@ -98,13 +102,13 @@ public class TestConfiguration extends HudsonTestCase {
         assertNotNull(config);
         assertEquals("* * * * *", config.getCronTime());
         assertEquals("true", config.getActiveCron());
-        assertTrue(config.isActiveCron());
+        assertTrue(config.isCronActive());
+        assertTrue(config.isTriggerActive());
         assertEquals(1, config.getRegExprs().size());
         assertEquals("reg ex one", config.getRegExprs().get(0).getValue());
         assertEquals("true", config.getNoChange());
         assertTrue(config.isRestartUnchangedJobsEnabled());
-        //assertEquals("true", config.getLogInfo());
-        //assertTrue(config.isLogInfoEnabled());
+        assertEquals(2, config.getMaxDepth());
     }
 
     /**
@@ -122,8 +126,10 @@ public class TestConfiguration extends HudsonTestCase {
 
         assertTrue(allElements.contains("Cron Time"));
         assertTrue(allElements.contains("Periodic Reincarnation"));
+        assertTrue(allElements.contains("Max restart depth"));
+        assertTrue(allElements.contains("Enable/Disable afterbuild job reincarnation"));
         assertTrue(allElements.contains("Regular Expressions"));
-        assertTrue(allElements.contains("Enable/Disable"));
+        assertTrue(allElements.contains("Enable/Disable cron job reincarnation"));
         assertTrue(allElements
                 .contains("Restart unchanged builds failing for the first time"));
 
