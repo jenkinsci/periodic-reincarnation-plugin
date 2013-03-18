@@ -58,63 +58,21 @@ public class TestConfiguration extends HudsonTestCase {
         assertEquals(reccurancePeriod, PeriodicReincarnation.get()
                 .getRecurrencePeriod());
 
-        checkJobsFromLocalData();
+        final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem(
+                "test_job");
+        assertNotNull("job missing.. @LocalData problem?", job1);
+        assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
+        System.out.println("JOB1 LOG:"
+                + job1.getLastBuild().getLogFile().toString());
+
+        final Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem(
+                "no_change");
+        assertNotNull("job missing.. @LocalData problem?", job2);
+        assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
+        assertNotNull(job2.getLastSuccessfulBuild());
 
         this.getGlobalForm();
 
-        populateValues();
-
-        checkPopulatedValues();
-
-        // checkLocalConfiguration();
-
-        Thread.sleep(1000 * 60);
-    }
-
-    /**
-     * Method should test local config page, but is never called due to an error
-     * Error: EcmaError: lineNumber=[969] column=[0] lineSource=[null]
-     * name=[TypeError]
-     * sourceName=[http://localhost:50018/static/d01de31c/scripts
-     * /hudson-behavior.js] message=[TypeError: Cannot call method
-     * "hasClassName" of undefined
-     * (http://localhost:50018/static/d01de31c/scripts/hudson-behavior.js#969)]
-     * com.gargoylesoftware.htmlunit.ScriptException: TypeError: Cannot call
-     * method "hasClassName" of undefined
-     * (http://localhost:50018/static/d01de31c/scripts/hudson-behavior.js#969)
-     * 
-     * 
-     * @throws IOException
-     * @throws SAXException
-     * @throws Exception
-     */
-//    private void checkLocalConfiguration() throws IOException, SAXException,
-//            Exception {
-//        final HtmlPage page = new WebClient()
-//                .goTo("job/afterbuild_test/configure");
-//        final String allElements = page.asText();
-//        assertTrue(allElements
-//                .contains("Configure PeriodicReincarnation locally"));
-//        HtmlForm localForm = page.getFormByName("config");
-//        assertNotNull(localForm);
-//
-//        final HtmlInput isLocallyConfigured = localForm
-//                .getInputByName("isLocallyConfigured");
-//        assertNotNull("isLocallyConfigured checkbox was null!",
-//                isLocallyConfigured);
-//        isLocallyConfigured.setChecked(true);
-//
-//        final HtmlInput isEnabled = localForm.getInputByName("_.isEnabled");
-//        assertNotNull("isEnabled checkbox was null!", isEnabled);
-//        isEnabled.setChecked(true);
-//
-//        final HtmlTextInput maxDepth = localForm.getInputByName("_.maxDepth");
-//        assertNotNull("MaxDepth(local) field is null!", maxDepth);
-//        maxDepth.setValueAttribute("2");
-//        submit(localForm);
-//    }
-
-    private void populateValues() throws Exception {
         final HtmlTextInput cronTime = form.getInputByName("_.cronTime");
         assertNotNull("Cron Time is null!", cronTime);
         cronTime.setValueAttribute("* * * * *");
@@ -148,24 +106,7 @@ public class TestConfiguration extends HudsonTestCase {
 
         // submit all populated values
         submit(this.form);
-    }
 
-    private void checkJobsFromLocalData() {
-        final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem(
-                "test_job");
-        assertNotNull("job missing.. @LocalData problem?", job1);
-        assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
-        System.out.println("JOB1 LOG:"
-                + job1.getLastBuild().getLogFile().toString());
-
-        final Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem(
-                "no_change");
-        assertNotNull("job missing.. @LocalData problem?", job2);
-        assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
-        assertNotNull(job2.getLastSuccessfulBuild());
-    }
-
-    private void checkPopulatedValues() {
         config = PeriodicReincarnationGlobalConfiguration.get();
         assertNotNull(config);
         assertEquals("* * * * *", config.getCronTime());
@@ -187,8 +128,11 @@ public class TestConfiguration extends HudsonTestCase {
         assertEquals("true", config.getNoChange());
         assertTrue(config.isRestartUnchangedJobsEnabled());
         assertEquals(2, config.getMaxDepth());
+
+        Thread.sleep(1000 * 35);
     }
 
+    
     /**
      * Finds and sets the global form. Also makes a couple of test to see if
      * everything is correct.
