@@ -7,8 +7,8 @@ xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 			Max restart depth: <f:textbox field="maxDepth" value="${it.getMaxDepth()}" style="width: 50px" />
 	 	</f:entry>
 
-  		<f:entry title="${%title.enabledisablecron}" field="activeCron">
-			<f:checkbox checked="${it.getActiveCron()}"/>
+  		<f:entry title="${%title.enabledisablecron}" >
+			<f:checkbox field="activeCron" checked="${it.getActiveCron()}"/>
 	 	</f:entry>
 	 	
 		
