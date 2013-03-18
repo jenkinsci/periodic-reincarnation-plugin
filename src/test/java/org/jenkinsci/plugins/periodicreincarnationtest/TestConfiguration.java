@@ -48,7 +48,7 @@ public class TestConfiguration extends HudsonTestCase {
      *             exception.
      */
     @LocalData
-    @Test
+    @Test(timeout = 80000)
     public void test1() throws Exception {
         final long reccurancePeriod = 60000;
         assertNotNull(PeriodicReincarnation.get());
@@ -128,11 +128,14 @@ public class TestConfiguration extends HudsonTestCase {
         assertEquals("true", config.getNoChange());
         assertTrue(config.isRestartUnchangedJobsEnabled());
         assertEquals(2, config.getMaxDepth());
-
-        Thread.sleep(1000 * 35);
+        try {
+            Thread.sleep(1000 * 65);
+        } catch (InterruptedException e) {
+            // we have been interrupted
+            return;
+        }
     }
 
-    
     /**
      * Finds and sets the global form. Also makes a couple of test to see if
      * everything is correct.
