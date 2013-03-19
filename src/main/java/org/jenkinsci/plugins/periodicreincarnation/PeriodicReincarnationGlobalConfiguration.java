@@ -123,7 +123,8 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * 
      * @return Returns ok if cron time was correct, error message otherwise.
      */
-    public FormValidation doCheckCronTime() throws ANTLRException, NullPointerException {
+    public FormValidation doCheckCronTime() throws ANTLRException,
+            NullPointerException {
         try {
             new CronTab(cronTime);
             return FormValidation.ok();
@@ -133,6 +134,17 @@ public class PeriodicReincarnationGlobalConfiguration extends
         } catch (NullPointerException e) {
             return FormValidation.error("Cron time was null");
         }
+    }
+
+    public FormValidation doCheckRegExprs() {
+        for (RegEx regEx : this.regExprs) {
+            try {
+                Pattern.compile(regEx.getValue());
+            } catch (PatternSyntaxException e) {
+                return FormValidation.error("RegEx could not be compiled, check for type errors!");
+            }
+        }
+        return FormValidation.ok();
     }
 
     /**
@@ -302,7 +314,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
             try {
                 pattern = Pattern.compile(this.value);
             } catch (PatternSyntaxException e) {
-                throw new AbortException();
+                throw new AbortException("RegEx cannot be compiled!");
             }
             return pattern;
         }

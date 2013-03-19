@@ -72,7 +72,9 @@ public class TestConfiguration extends HudsonTestCase {
         assertNotNull("job missing.. @LocalData problem?", job2);
         assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
         assertNotNull(job2.getLastSuccessfulBuild());
-
+        
+        //localConfigurationTest();
+        
         this.getGlobalForm();
 
         final HtmlTextInput cronTime = form.getInputByName("_.cronTime");
@@ -167,6 +169,12 @@ public class TestConfiguration extends HudsonTestCase {
 
         this.form = page.getFormByName("config");
         assertNotNull("Form is null!", this.form);
+    }
+    private void localConfigurationTest() throws IOException, SAXException {
+        final HtmlPage page = new WebClient().goTo("job/afterbuild_test/configure");
+        assertNotNull(page);
+        final String allElements = page.asText();
+        assertNotNull(allElements);
     }
 
 }
