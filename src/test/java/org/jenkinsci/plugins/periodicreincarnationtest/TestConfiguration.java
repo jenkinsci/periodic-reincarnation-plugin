@@ -1,6 +1,8 @@
 package org.jenkinsci.plugins.periodicreincarnationtest;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
 import antlr.ANTLRException;
 import hudson.model.Hudson;
 import hudson.model.Job;
@@ -48,7 +50,7 @@ public class TestConfiguration extends HudsonTestCase {
      *             exception.
      */
     @LocalData
-    @Test(timeout = 80000)
+    @Test
     public void test1() throws Exception {
         final long reccurancePeriod = 60000;
         assertNotNull(PeriodicReincarnation.get());
@@ -106,7 +108,12 @@ public class TestConfiguration extends HudsonTestCase {
 
         // submit all populated values
         submit(this.form);
-
+        try {
+            TimeUnit.SECONDS.sleep(50);
+        } catch (InterruptedException e) {
+            // we have been interrupted
+        }
+        
         config = PeriodicReincarnationGlobalConfiguration.get();
         assertNotNull(config);
         assertEquals("* * * * *", config.getCronTime());
@@ -127,13 +134,13 @@ public class TestConfiguration extends HudsonTestCase {
         assertEquals("test", config.getRegExprs().get(0).getValue());
         assertEquals("true", config.getNoChange());
         assertTrue(config.isRestartUnchangedJobsEnabled());
-        assertEquals(2, config.getMaxDepth());
         try {
-            Thread.sleep(1000 * 65);
+            TimeUnit.SECONDS.sleep(100);
         } catch (InterruptedException e) {
             // we have been interrupted
-            return;
         }
+        assertEquals(2, config.getMaxDepth());
+        
     }
 
     /**
