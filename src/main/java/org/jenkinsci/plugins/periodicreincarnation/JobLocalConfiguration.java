@@ -11,14 +11,32 @@ import hudson.model.JobPropertyDescriptor;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
 
+/**
+ * Local configuration class.
+ * @author yboev
+ *
+ */
 public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
-
+    
+    /**
+     * Tells if restart is enabled for this project.
+     */
     boolean isEnabled;
+    /**
+     * Max restart depth.
+     */
     int maxDepth;
+    
+    /**
+     * Tells if this project is locally configured(true means we override global values).
+     */
     boolean isLocallyConfigured;
 
     /**
      * Contructor for data binding of form data.
+     * @param isEnabled
+     * @param maxDepth
+     * @param isLocallyConfigured
      */
     @DataBoundConstructor
     public JobLocalConfiguration(boolean isEnabled, int maxDepth,
@@ -27,15 +45,27 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
         this.maxDepth = maxDepth;
         this.isLocallyConfigured = isLocallyConfigured;
     }
-
+    
+    /**
+     * Returns isEnabled.
+     * @return isEnabled value.
+     */
     public boolean getIsEnabled() {
         return isEnabled;
     }
 
+    /**
+     * Returns maxDepth.
+     * @return maxDepth value.
+     */
     public int getMaxDepth() {
         return maxDepth;
     }
-
+    
+    /**
+     * Returns isLocallyConfigured.
+     * @return isLocallyConfigured value.
+     */
     public boolean getIsLocallyConfigured() {
         return isLocallyConfigured;
     }
@@ -44,10 +74,18 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
-
+    
+    /**
+     * Descriptor object.
+     */
     @Extension
     public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
+    /**
+     * Implementation of the descriptor object.
+     * @author yboev
+     *
+     */
     public static final class DescriptorImpl extends JobPropertyDescriptor {
 
         /** Constructor loads previously saved form data. */

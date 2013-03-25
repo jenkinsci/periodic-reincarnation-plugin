@@ -73,14 +73,15 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * Constructor. DataBound because this constructor is used to populate
      * values entered from the user.
      * 
-     * @param active
-     *            shows if plugin is enabled disabled.
+     * @param activeTrigger shows if plugin trigger restart is enabled.
+     * @param activeCron
+     *            shows if plugin cron restart is enabled.
      * @param cronTime
      *            contains the cron time.
      * @param regExprs
      *            list of all regular expressions.
-     * @param logInfo
-     *            shows if log info is enabled
+     * @param maxDepth
+     *            max restart depth.
      * @param noChange
      *            shows if no change option is enabled or disabled.
      */
@@ -273,7 +274,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
          * Value of the reg ex as String.
          */
         private String value;
-
+        
         private String nodeAction;
 
         private String masterAction;

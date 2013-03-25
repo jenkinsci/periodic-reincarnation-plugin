@@ -11,10 +11,23 @@ import hudson.model.Project;
 import hudson.model.listeners.RunListener;
 import static hudson.model.Result.SUCCESS;
 
+/**
+ * This class triggers a restart automatically after a build has failed.
+ * @author yboev
+ *
+ */
 @Extension
 public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
-
+    
+    /**
+     * Maximal times a project can be automatically restarted from this class in a row.
+     * 
+     */
     int maxRestartDepth;
+    
+    /**
+     * Tells if this type of restart is enabled.
+     */
     boolean isEnabled;
 
     @Override
@@ -30,9 +43,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
             return;
         }
 
-        JobLocalConfiguration localconfig = build.getProject().getProperty(
+        final JobLocalConfiguration localconfig = build.getProject().getProperty(
                 JobLocalConfiguration.class);
-        PeriodicReincarnationGlobalConfiguration config = PeriodicReincarnationGlobalConfiguration
+        final PeriodicReincarnationGlobalConfiguration config = PeriodicReincarnationGlobalConfiguration
                 .get();
         // stop if there is no global configuration
         if (config == null) {
@@ -41,7 +54,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         setConfigVariables(localconfig, config);
 
         // stop if not enabled
-        if (this.isEnabled == false) {
+        if (!this.isEnabled) {
             return;
         }
 
@@ -52,7 +65,12 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         checkForNoChangeRestart(build, config);
 
     }
-
+    
+    /**
+     * Checks if we can restart the project for unchanged project configuration.
+     * @param build the build
+     * @param config the periodic reincarnation configuration
+     */
     private void checkForNoChangeRestart(AbstractBuild<?, ?> build,
             PeriodicReincarnationGlobalConfiguration config) {
         if (Utils
@@ -73,9 +91,14 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         }
     }
 
+    /**
+     * Checks if we can restart the project for a RegEx hit.
+     * @param build the build
+     * @param config the periodic reincarnation configuration
+     */
     private void checkForRegExRestart(AbstractBuild<?, ?> build,
             PeriodicReincarnationGlobalConfiguration config) {
-        RegEx regEx = Utils.checkBuild(build);
+        final RegEx regEx = Utils.checkBuild(build);
         if (regEx != null && checkRestartDepth(build)) {
             try {
                 Utils.restart((Project<?, ?>) build.getProject(), config,
@@ -88,7 +111,12 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
             }
         }
     }
-
+    
+    /**
+     * Retrieves values from global or local config.
+     * @param localconfig localconfiguration
+     * @param config globalconfiguration
+     */
     private void setConfigVariables(JobLocalConfiguration localconfig,
             PeriodicReincarnationGlobalConfiguration config) {
         if (localconfig != null && localconfig.getIsLocallyConfigured()) {
@@ -99,7 +127,12 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
             this.maxRestartDepth = config.getMaxDepth();
         }
     }
-
+    
+    /**
+     * Checks the restart depth for the current project.
+     * @param build
+     * @return
+     */
     private boolean checkRestartDepth(AbstractBuild<?, ?> build) {
         if (this.maxRestartDepth <= 0) {
             return true;

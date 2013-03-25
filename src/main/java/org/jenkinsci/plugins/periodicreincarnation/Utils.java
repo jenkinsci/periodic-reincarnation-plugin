@@ -24,6 +24,11 @@ import hudson.model.Run;
 import hudson.util.IOUtils;
 import hudson.util.RemotingDiagnostics;
 
+/**
+ * Utility class.
+ * @author yboev
+ *
+ */
 public class Utils {
 
     /**

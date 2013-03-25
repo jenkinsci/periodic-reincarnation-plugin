@@ -52,6 +52,31 @@ public class TestConfiguration extends HudsonTestCase {
     @LocalData
     @Test
     public void test1() throws Exception {
+        checkPeriodAndCause();
+        checkLoadedJobs();
+        this.getGlobalForm();
+        setConfigurationProperties();
+
+        // submit all populated values
+        submit(this.form);
+
+        try {
+            TimeUnit.SECONDS.sleep(50);
+        } catch (InterruptedException e) {
+            // we have been interrupted
+        }
+        
+        checkConfiguredValues();
+        try {
+            TimeUnit.SECONDS.sleep(100);
+        } catch (InterruptedException e) {
+            // we have been interrupted
+        }
+        assertEquals(2, this.config.getMaxDepth());
+        
+    }
+
+    private void checkPeriodAndCause() {
         final long reccurancePeriod = 60000;
         assertNotNull(PeriodicReincarnation.get());
         final String s = "reg ex hit";
@@ -59,24 +84,32 @@ public class TestConfiguration extends HudsonTestCase {
                 new PeriodicReincarnationBuildCause(s).getShortDescription());
         assertEquals(reccurancePeriod, PeriodicReincarnation.get()
                 .getRecurrencePeriod());
+    }
 
-        final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem(
-                "test_job");
-        assertNotNull("job missing.. @LocalData problem?", job1);
-        assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
-        System.out.println("JOB1 LOG:"
-                + job1.getLastBuild().getLogFile().toString());
+    private void checkConfiguredValues() {
+        config = PeriodicReincarnationGlobalConfiguration.get();
+        assertNotNull(config);
+        assertEquals("* * * * *", config.getCronTime());
+        try {
+            config.doCheckCronTime();
+        } catch (ANTLRException e) {
+            Assert.fail();
+        } catch (NullPointerException e2) {
+            Assert.fail();
+        }
 
-        final Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem(
-                "no_change");
-        assertNotNull("job missing.. @LocalData problem?", job2);
-        assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
-        assertNotNull(job2.getLastSuccessfulBuild());
-        
-        //localConfigurationTest();
-        
-        this.getGlobalForm();
+        assertEquals("true", config.getActiveCron());
+        assertTrue(config.isCronActive());
+        assertTrue(config.isTriggerActive());
+        assertEquals("true", config.getActiveCron());
+        assertEquals("true", config.getActiveTrigger());
+        assertEquals(1, config.getRegExprs().size());
+        assertEquals("test", config.getRegExprs().get(0).getValue());
+        assertEquals("true", config.getNoChange());
+        assertTrue(config.isRestartUnchangedJobsEnabled());
+    }
 
+    private void setConfigurationProperties() throws IOException {
         final HtmlTextInput cronTime = form.getInputByName("_.cronTime");
         assertNotNull("Cron Time is null!", cronTime);
         cronTime.setValueAttribute("* * * * *");
@@ -107,42 +140,21 @@ public class TestConfiguration extends HudsonTestCase {
                 .getFirstByXPath("//input[@name='" + "regExprs.value" + "']");
         assertNotNull("regEx1 is null!", regEx1);
         regEx1.setValueAttribute("test");
+    }
 
-        // submit all populated values
-        submit(this.form);
-        try {
-            TimeUnit.SECONDS.sleep(50);
-        } catch (InterruptedException e) {
-            // we have been interrupted
-        }
-        
-        config = PeriodicReincarnationGlobalConfiguration.get();
-        assertNotNull(config);
-        assertEquals("* * * * *", config.getCronTime());
-        try {
-            config.doCheckCronTime();
-        } catch (ANTLRException e) {
-            Assert.fail();
-        } catch (NullPointerException e2) {
-            Assert.fail();
-        }
+    private void checkLoadedJobs() {
+        final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem(
+                "test_job");
+        assertNotNull("job missing.. @LocalData problem?", job1);
+        assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
+        System.out.println("JOB1 LOG:"
+                + job1.getLastBuild().getLogFile().toString());
 
-        assertEquals("true", config.getActiveCron());
-        assertTrue(config.isCronActive());
-        assertTrue(config.isTriggerActive());
-        assertEquals("true", config.getActiveCron());
-        assertEquals("true", config.getActiveTrigger());
-        assertEquals(1, config.getRegExprs().size());
-        assertEquals("test", config.getRegExprs().get(0).getValue());
-        assertEquals("true", config.getNoChange());
-        assertTrue(config.isRestartUnchangedJobsEnabled());
-        try {
-            TimeUnit.SECONDS.sleep(100);
-        } catch (InterruptedException e) {
-            // we have been interrupted
-        }
-        assertEquals(2, config.getMaxDepth());
-        
+        final Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem(
+                "no_change");
+        assertNotNull("job missing.. @LocalData problem?", job2);
+        assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
+        assertNotNull(job2.getLastSuccessfulBuild());
     }
 
     /**
@@ -170,6 +182,7 @@ public class TestConfiguration extends HudsonTestCase {
         this.form = page.getFormByName("config");
         assertNotNull("Form is null!", this.form);
     }
+    
     private void localConfigurationTest() throws IOException, SAXException {
         final HtmlPage page = new WebClient().goTo("job/afterbuild_test/configure");
         assertNotNull(page);
