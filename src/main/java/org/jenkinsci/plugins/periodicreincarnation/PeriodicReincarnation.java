@@ -108,13 +108,13 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * Determines if a project should be tested for RegEx match or no error
      * between the last two builds.
      * 
-     * @param project
+     * @param project the current project
      * @return true should be tested, false otherwise
      */
     private boolean isValidCandidateForRestart(final Project<?, ?> project) {
         // TODO: possible race condition with last build variable
         return project != null
-                && project instanceof BuildableItem
+                && project.isBuildable()
                 && project.getLastBuild() != null
                 && project.getLastBuild().getResult() != null
                 && project.getLastBuild().getResult()

@@ -23,12 +23,12 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * Maximal times a project can be automatically restarted from this class in a row.
      * 
      */
-    int maxRestartDepth;
+    private int maxRestartDepth;
     
     /**
      * Tells if this type of restart is enabled.
      */
-    boolean isEnabled;
+    private boolean isEnabled;
 
     @Override
     public void onCompleted(AbstractBuild<?, ?> build, TaskListener listener) {
@@ -130,8 +130,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
     
     /**
      * Checks the restart depth for the current project.
-     * @param build
-     * @return
+     * @param build the current build
+     * @return true if check has passed, false otherwise
      */
     private boolean checkRestartDepth(AbstractBuild<?, ?> build) {
         if (this.maxRestartDepth <= 0) {

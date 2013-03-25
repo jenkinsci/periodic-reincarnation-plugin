@@ -21,22 +21,22 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
     /**
      * Tells if restart is enabled for this project.
      */
-    boolean isEnabled;
+    private boolean isEnabled;
     /**
      * Max restart depth.
      */
-    int maxDepth;
+    private int maxDepth;
     
     /**
      * Tells if this project is locally configured(true means we override global values).
      */
-    boolean isLocallyConfigured;
+    private boolean isLocallyConfigured;
 
     /**
      * Contructor for data binding of form data.
-     * @param isEnabled
-     * @param maxDepth
-     * @param isLocallyConfigured
+     * @param isEnabled true if activated.
+     * @param maxDepth max restart depth
+     * @param isLocallyConfigured tells if local config is enabled.
      */
     @DataBoundConstructor
     public JobLocalConfiguration(boolean isEnabled, int maxDepth,

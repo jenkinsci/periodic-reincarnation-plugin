@@ -182,12 +182,12 @@ public class TestConfiguration extends HudsonTestCase {
         this.form = page.getFormByName("config");
         assertNotNull("Form is null!", this.form);
     }
-    
+    /*
     private void localConfigurationTest() throws IOException, SAXException {
         final HtmlPage page = new WebClient().goTo("job/afterbuild_test/configure");
         assertNotNull(page);
         final String allElements = page.asText();
         assertNotNull(allElements);
-    }
+    }*/
 
 }

@@ -26,8 +26,9 @@ import hudson.util.RemotingDiagnostics;
 
 /**
  * Utility class.
+ * 
  * @author yboev
- *
+ * 
  */
 public class Utils {
 
@@ -56,12 +57,12 @@ public class Utils {
             return false;
         }
         final Run<?, ?> secondLastBuild = lastBuild.getPreviousBuild();
-        if (lastBuild != null && lastBuild.getResult() != null
+        if (lastBuild.getResult() != null
                 && lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
                 && secondLastBuild != null
                 && secondLastBuild.getResult() != null
                 && secondLastBuild.getResult().isBetterThan(Result.FAILURE)
-                && !changesBetweenTwoBuilds(lastBuild, secondLastBuild)) {
+                && !changesBetweenTwoBuilds(lastBuild)) {
             // last build failed, but second one didn't and there were no
             // changes between the two builds
             // in this case we restart the build
@@ -81,12 +82,15 @@ public class Utils {
      *            instance of periodic reincarnation configuration.
      * @param cause
      *            the cause for the restart.
-     * @throws InterruptedException
+     * @param regEx
+     *            regual expression
      * @throws IOException
+     * @throws InterruptedException
+     * 
      */
     protected static void restart(Project<?, ?> project,
-            PeriodicReincarnationGlobalConfiguration config, String cause, RegEx regEx)
-            throws IOException, InterruptedException {
+            PeriodicReincarnationGlobalConfiguration config, String cause,
+            RegEx regEx) throws IOException, InterruptedException {
         if (regEx != null) {
 
             Utils.execAction(project, config, regEx.getNodeAction(),
@@ -175,8 +179,7 @@ public class Utils {
      *            Second build.
      * @return true if there is at least one chage, false otherwise.
      */
-    private static boolean changesBetweenTwoBuilds(Run<?, ?> build1,
-            Run<?, ?> build2) {
+    private static boolean changesBetweenTwoBuilds(Run<?, ?> build1) {
         // return ((AbstractBuild<?, ?>) build1).getChangeSet().equals(
         // ((AbstractBuild<?, ?>) build2).getChangeSet());
         return !((AbstractBuild<?, ?>) build1).getChangeSet().isEmptySet();
