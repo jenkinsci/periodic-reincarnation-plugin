@@ -28,6 +28,6 @@ public class PeriodicReincarnationBuildCause extends Cause {
 
     @Override
     public String getShortDescription() {
-        return "PeriodicReincarnation - " + this.restartCause;
+        return "Periodic Reincarnation - " + this.restartCause;
     }
 }

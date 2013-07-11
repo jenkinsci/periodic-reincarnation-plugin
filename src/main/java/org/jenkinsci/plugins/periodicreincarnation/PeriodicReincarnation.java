@@ -16,6 +16,10 @@ import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalCo
 import antlr.ANTLRException;
 
 import hudson.Extension;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Main class of the periodic reincarnation plug-in. Method execute is called
@@ -35,6 +39,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     private static final Logger LOGGER = Logger
             .getLogger(PeriodicReincarnation.class.getName());
 
+//    private TreeMap<String, ArrayList<Project<?, ?>>> cronRestartProjects;
+//    private Set<String> scheduledProjects;
+
     /**
      * Constructor.
      */
@@ -53,7 +60,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         final PeriodicReincarnationGlobalConfiguration config = PeriodicReincarnationGlobalConfiguration
                 .get();
         if (config == null) {
-            LOGGER.warning("No configuration available. Returning with nothing being done!");
+            LOGGER.warning("No configuration available...returning with nothing being done!");
             return;
         }
 
@@ -61,46 +68,77 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         if (!config.isCronActive()) {
             return;
         }
-        if (cron != null) {
-            try {
-                final CronTab cronTab = new CronTab(cron);
-                final long currentTime = System.currentTimeMillis();
-                RegEx regEx;
+        
+//        this.cronRestartProjects = new TreeMap<String, ArrayList<Project<?, ?>>>();
+//        this.scheduledProjects = new HashSet<String>();
+        final long currentTime = System.currentTimeMillis();
+        
 
-                if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
-                    for (Project<?, ?> project : Hudson.getInstance()
-                            .getProjects()) {
-                        if (isValidCandidateForRestart(project)) {
-                            regEx = Utils.checkBuild(project.getLastBuild());
-                            if (regEx != null) {
-                                Utils.restart(project, config,
-                                        "(Cron restart) RegEx hit in console output: "
-                                                + regEx.getValue(), regEx);
+        restartOnRegExHit(currentTime);
 
-                            } else if (config.isRestartUnchangedJobsEnabled()
-                                    && Utils.qualifyForUnchangedRestart(project)) {
+        if (cron != null && config.isRestartUnchangedJobsEnabled()) {
+            restartUnchangedProjects(cron, currentTime);
+        }
+    }
+
+    private void restartOnRegExHit(final long currentTime) {
+        for (RegEx regEx : PeriodicReincarnationGlobalConfiguration.get()
+                .getRegExprs()) {
+            if (regEx.isTimeToRestart(currentTime)) {
+                for (Project<?, ?> project : Hudson.getInstance().getProjects()) {
+                    if (isValidCandidateForRestart(project)
+                            && Utils.checkBuild(project.getLastBuild(), regEx)) {
+                        try {
+                            Utils.restart(
+                                    project,
+                                    "RegEx hit in console output: "
+                                            + regEx.getValue(),
+                                    Constants.CRONRESTART, regEx);
+                        } catch (IOException e) {
+                            LOGGER.warning("IO error restarting project "
+                                    + project.getDisplayName());
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            LOGGER.warning("Interrupt error restarting project "
+                                    + project.getDisplayName());
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private void restartUnchangedProjects(final String cron,
+            final long currentTime) {
+        CronTab cronTab;
+        try {
+            cronTab = new CronTab(cron);
+            if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
+                for (Project<?, ?> project : Hudson.getInstance().getProjects()) {
+                    if (isValidCandidateForRestart(project)) {
+                        if (Utils.qualifyForUnchangedRestart(project)) {
+                            try {
                                 Utils.restart(
                                         project,
-                                        config,
-                                        "(Cron restart) No difference between last two builds",
-                                        null);
+                                        "No difference between last two builds",
+                                        Constants.CRONRESTART, null);
+                            } catch (IOException e) {
+                                LOGGER.warning("IO error restarting project "
+                                        + project.getDisplayName());
+                                e.printStackTrace();
+                            } catch (InterruptedException e) {
+                                LOGGER.warning("Interrupt error restarting project "
+                                        + project.getDisplayName());
+                                e.printStackTrace();
                             }
                         }
                     }
                 }
-
-            } catch (ANTLRException e) {
-                LOGGER.warning("Could not parse the given cron tab. Check for type errors: "
-                        + e.getMessage());
-            } catch (InterruptedException e) {
-                LOGGER.warning("Could not parse the given cron tab. Check for type errors: "
-                        + e.getMessage());
-            } catch (IOException e) {
-                LOGGER.warning("Could not parse the given cron tab. Check for type errors: "
-                        + e.getMessage());
             }
-        } else {
-            LOGGER.warning("Cron time is not configured.");
+        } catch (ANTLRException e1) {
+            LOGGER.warning("Global cron time could not be parsed!");
+            e1.printStackTrace();
         }
     }
 
@@ -108,11 +146,11 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * Determines if a project should be tested for RegEx match or no error
      * between the last two builds.
      * 
-     * @param project the current project
+     * @param project
+     *            the current project
      * @return true should be tested, false otherwise
      */
     private boolean isValidCandidateForRestart(final Project<?, ?> project) {
-        // TODO: possible race condition with last build variable
         return project != null
                 && project.isBuildable()
                 && project.getLastBuild() != null

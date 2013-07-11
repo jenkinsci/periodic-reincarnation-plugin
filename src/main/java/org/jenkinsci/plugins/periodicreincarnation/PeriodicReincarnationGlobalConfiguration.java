@@ -1,9 +1,10 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
+import hudson.scheduler.CronTab;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.scheduler.CronTab;
@@ -73,7 +74,8 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * Constructor. DataBound because this constructor is used to populate
      * values entered from the user.
      * 
-     * @param activeTrigger shows if plugin trigger restart is enabled.
+     * @param activeTrigger
+     *            shows if plugin trigger restart is enabled.
      * @param activeCron
      *            shows if plugin cron restart is enabled.
      * @param cronTime
@@ -142,7 +144,8 @@ public class PeriodicReincarnationGlobalConfiguration extends
             try {
                 Pattern.compile(regEx.getValue());
             } catch (PatternSyntaxException e) {
-                return FormValidation.error("RegEx could not be compiled, check for type errors!");
+                return FormValidation
+                        .error("RegEx could not be compiled, check for type errors!");
             }
         }
         return FormValidation.ok();
@@ -274,9 +277,26 @@ public class PeriodicReincarnationGlobalConfiguration extends
          * Value of the reg ex as String.
          */
         private String value;
-        
+
+        /**
+         * Description for this regex.
+         */
+        private String description;
+
+        /**
+         * Cron time format for this regex. Overrides the globally configured
+         * cron time if set.
+         */
+        private String cronTime;
+
+        /**
+         * Script for node.
+         */
         private String nodeAction;
 
+        /**
+         * Script for master.
+         */
         private String masterAction;
 
         /**
@@ -284,12 +304,21 @@ public class PeriodicReincarnationGlobalConfiguration extends
          * 
          * @param value
          *            the reg ex.
+         * @param description
+         *            regex description
+         * @param cronTime
+         *            cron time format.
          * @param nodeAction
+         *            node script.
          * @param masterAction
+         *            master script
          */
         @DataBoundConstructor
-        public RegEx(String value, String nodeAction, String masterAction) {
+        public RegEx(String value, String description, String cronTime,
+                String nodeAction, String masterAction) {
             this.value = value;
+            this.description = description;
+            this.cronTime = cronTime;
             this.nodeAction = nodeAction;
             this.masterAction = masterAction;
         }
@@ -301,6 +330,24 @@ public class PeriodicReincarnationGlobalConfiguration extends
          */
         public String getValue() {
             return this.value;
+        }
+
+        /**
+         * Returns a description for this regex.
+         * 
+         * @return Description as String.
+         */
+        public String getDescription() {
+            return this.description;
+        }
+
+        /**
+         * Returns the cron time for this particular regex.
+         * 
+         * @return crontime as String.
+         */
+        public String getCronTime() {
+            return this.cronTime;
         }
 
         /**
@@ -320,12 +367,54 @@ public class PeriodicReincarnationGlobalConfiguration extends
             return pattern;
         }
 
+        /**
+         * Returns the node script.
+         * 
+         * @return the script as String.
+         */
         public String getNodeAction() {
             return nodeAction;
         }
 
+        /**
+         * Returns the master script.
+         * 
+         * @return the script as String.
+         */
         public String getMasterAction() {
             return masterAction;
+        }
+
+        public boolean isTimeToRestart(long currentTime) {
+            CronTab regExCronTab = null;
+            CronTab globalExCronTab = null;
+            try {
+                if (this.getCronTime() != null) {
+                    regExCronTab = new CronTab(this.getCronTime());
+                }
+            } catch (ANTLRException e) {
+                // reg ex could not be parsed.
+            }
+            try {
+                if(PeriodicReincarnationGlobalConfiguration.get()
+                        .getCronTime() != null) {
+                    globalExCronTab = new CronTab(
+                            PeriodicReincarnationGlobalConfiguration.get()
+                                    .getCronTime());
+                }
+            } catch (ANTLRException e) {
+                // global regex could not be parsed.
+            }
+            if (regExCronTab != null) {
+                return (regExCronTab.ceil(currentTime).getTimeInMillis()
+                        - currentTime == 0);
+            }
+            if (globalExCronTab != null) {
+                return (globalExCronTab.ceil(currentTime).getTimeInMillis()
+                        - currentTime == 0);
+            }
+            return false;
+
         }
     }
 

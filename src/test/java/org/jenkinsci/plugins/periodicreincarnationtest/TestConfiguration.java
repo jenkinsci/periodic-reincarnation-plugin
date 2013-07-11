@@ -46,6 +46,10 @@ public class TestConfiguration extends HudsonTestCase {
      * values and submits it. Checks if the values have been populated right and
      * waits for the PeriodicReincarnation to start restarting jobs.
      * 
+     * *** Sometimes the sleep is interrupted and the execution ends without
+     * restarting jobs. This leaves some code unexecuted and unchecked, but
+     * happens very rarely. Reason - unknown.
+     * 
      * @throws Exception
      *             exception.
      */
@@ -65,7 +69,7 @@ public class TestConfiguration extends HudsonTestCase {
         } catch (InterruptedException e) {
             // we have been interrupted
         }
-        
+
         checkConfiguredValues();
         try {
             TimeUnit.SECONDS.sleep(100);
@@ -73,14 +77,14 @@ public class TestConfiguration extends HudsonTestCase {
             // we have been interrupted
         }
         assertEquals(2, this.config.getMaxDepth());
-        
+
     }
 
     private void checkPeriodAndCause() {
         final long reccurancePeriod = 60000;
         assertNotNull(PeriodicReincarnation.get());
         final String s = "reg ex hit";
-        assertEquals("PeriodicReincarnation - " + s,
+        assertEquals("Periodic Reincarnation - " + s,
                 new PeriodicReincarnationBuildCause(s).getShortDescription());
         assertEquals(reccurancePeriod, PeriodicReincarnation.get()
                 .getRecurrencePeriod());
@@ -182,12 +186,5 @@ public class TestConfiguration extends HudsonTestCase {
         this.form = page.getFormByName("config");
         assertNotNull("Form is null!", this.form);
     }
-    /*
-    private void localConfigurationTest() throws IOException, SAXException {
-        final HtmlPage page = new WebClient().goTo("job/afterbuild_test/configure");
-        assertNotNull(page);
-        final String allElements = page.asText();
-        assertNotNull(allElements);
-    }*/
 
 }

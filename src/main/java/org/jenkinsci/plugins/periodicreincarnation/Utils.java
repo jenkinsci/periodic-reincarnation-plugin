@@ -88,17 +88,21 @@ public class Utils {
      * @throws InterruptedException
      * 
      */
-    protected static void restart(Project<?, ?> project,
-            PeriodicReincarnationGlobalConfiguration config, String cause,
-            RegEx regEx) throws IOException, InterruptedException {
+    protected static void restart(Project<?, ?> project, String cause,
+            String restartType, RegEx regEx) throws IOException,
+            InterruptedException {
         if (regEx != null) {
+            if (regEx.getDescription() != null
+                    && regEx.getDescription().length() > 0) {
 
-            Utils.execAction(project, config, regEx.getNodeAction(),
+                cause = regEx.getDescription();
+            }
+            Utils.execAction(project, regEx.getNodeAction(),
                     regEx.getMasterAction());
-
         }
+        cause = "(" + restartType + ") " + cause;
         project.scheduleBuild(new PeriodicReincarnationBuildCause(cause));
-        LOGGER.info("Restarting project " + project.getDisplayName() + "....."
+        LOGGER.info("Restarting project " + project.getDisplayName() + "..."
                 + cause);
     }
 
@@ -127,6 +131,29 @@ public class Utils {
             }
         }
         return null;
+    }
+
+    /**
+     * Checks if a certain build matches the given regular expression.
+     * 
+     * @param build
+     *            the build.
+     * @param regEx
+     *            the regular expression.
+     * @return true means a match, false otherwise.
+     */
+    protected static boolean checkBuild(Run<?, ?> build, RegEx regEx) {
+        try {
+            if (build.getLogFile() == null) {
+                LOGGER.warning("Log file cound not be retrieved for project: "
+                        + build.getParent().getDisplayName());
+                return false;
+            }
+            return checkFile(build.getLogFile(), regEx.getPattern(), true);
+        } catch (AbortException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -163,7 +190,7 @@ public class Utils {
                 }
             }
         } catch (IOException e) {
-            LOGGER.info("File could not be read!");
+            LOGGER.warning("File could not be read!");
         } finally {
             IOUtils.closeQuietly(reader);
         }
@@ -171,18 +198,18 @@ public class Utils {
     }
 
     /**
-     * Determines whether or not there were changes between two builds.
+     * Determines whether or not there were changes between the last build that
+     * failed and the second last that was a success.
      * 
      * @param build1
-     *            First build.
-     * @param build2
-     *            Second build.
-     * @return true if there is at least one chage, false otherwise.
+     *            the last build that failed.
+     * @return true if there is at least one change, false otherwise.
      */
     private static boolean changesBetweenTwoBuilds(Run<?, ?> build1) {
-        // return ((AbstractBuild<?, ?>) build1).getChangeSet().equals(
-        // ((AbstractBuild<?, ?>) build2).getChangeSet());
-        return !((AbstractBuild<?, ?>) build1).getChangeSet().isEmptySet();
+        if (build1 instanceof AbstractBuild) {
+            return !((AbstractBuild<?, ?>) build1).getChangeSet().isEmptySet();
+        }
+        return true;
     }
 
     /**
@@ -199,47 +226,50 @@ public class Utils {
      * @throws IOException
      * @throws InterruptedException
      */
-    private static void execAction(Project<?, ?> project,
-            PeriodicReincarnationGlobalConfiguration config, String nodeAction,
+    private static void execAction(Project<?, ?> project, String nodeAction,
             String masterAction) throws IOException, InterruptedException {
         final Node node = project.getLastBuild().getBuiltOn();
         final Computer slave = node.toComputer();
 
-        LOGGER.info("executing script in node: " + slave.getName());
-        LOGGER.fine("executing script " + nodeAction + " in node: "
-                + slave.getName());
-        try {
-            RemotingDiagnostics.executeGroovy(nodeAction, slave.getChannel());
-        } catch (IOException e) {
-            final String message = "Error: " + e.getMessage()
-                    + "there were problems executing script in "
-                    + slave.getName() + " script: " + nodeAction;
-            LOGGER.warning(message);
-        } catch (InterruptedException e) {
-            final String message = "Error: " + e.getMessage()
-                    + "there were problems executing script in "
-                    + slave.getName() + " script: " + nodeAction;
-            LOGGER.warning(message);
+        if (nodeAction != null && nodeAction.length() > 1) {
+            LOGGER.info("executing script in node: " + slave.getName());
+            LOGGER.fine("executing script " + nodeAction + " in node: "
+                    + slave.getName());
+            try {
+                RemotingDiagnostics.executeGroovy(nodeAction,
+                        slave.getChannel());
+            } catch (IOException e) {
+                final String message = "Error: " + e.getMessage()
+                        + "there were problems executing script in "
+                        + slave.getName() + " script: " + nodeAction;
+                LOGGER.warning(message);
+            } catch (InterruptedException e) {
+                final String message = "Error: " + e.getMessage()
+                        + "there were problems executing script in "
+                        + slave.getName() + " script: " + nodeAction;
+                LOGGER.warning(message);
+            }
         }
-
-        masterAction = "slave_name = " + "'" + slave.getName() + "'" + "; \n"
-                + masterAction;
-        LOGGER.info("executing script in master.");
-        LOGGER.fine("executing this script in master: \n " + masterAction
-                + " in master.");
-        try {
-            RemotingDiagnostics.executeGroovy(masterAction,
-                    Jenkins.MasterComputer.localChannel);
-        } catch (IOException e) {
-            final String message = "Error: " + e.getMessage()
-                    + "there were problems executing script in "
-                    + "the master node. Script: " + masterAction;
-            LOGGER.warning(message);
-        } catch (InterruptedException e) {
-            final String message = "Error: " + e.getMessage()
-                    + "there were problems executing script in "
-                    + "the master node. Script: " + masterAction;
-            LOGGER.warning(message);
+        if (masterAction != null && masterAction.length() > 1) {
+            masterAction = "slave_name = " + "'" + slave.getName() + "'"
+                    + "; \n" + masterAction;
+            LOGGER.info("executing script in master.");
+            LOGGER.fine("executing this script in master: \n " + masterAction
+                    + " in master.");
+            try {
+                RemotingDiagnostics.executeGroovy(masterAction,
+                        Jenkins.MasterComputer.localChannel);
+            } catch (IOException e) {
+                final String message = "Error: " + e.getMessage()
+                        + "there were problems executing script in "
+                        + "the master node. Script: " + masterAction;
+                LOGGER.warning(message);
+            } catch (InterruptedException e) {
+                final String message = "Error: " + e.getMessage()
+                        + "there were problems executing script in "
+                        + "the master node. Script: " + masterAction;
+                LOGGER.warning(message);
+            }
         }
     }
 
