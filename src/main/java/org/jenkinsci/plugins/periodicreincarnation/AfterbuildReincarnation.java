@@ -36,7 +36,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
     public void onCompleted(AbstractBuild<?, ?> build, TaskListener listener) {
 
         // stop if no build or project can be retrieved
-        if (build == null || build.getProject() == null) {
+        if (build == null || build.getProject() == null
+                || !(build.getProject() instanceof Project<?, ?>)) {
             return;
         }
 
@@ -81,17 +82,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
                 && Utils.qualifyForUnchangedRestart((Project<?, ?>) build
                         .getProject())
                 && config.isRestartUnchangedJobsEnabled()) {
-            try {
+            Utils.restart((Project<?, ?>) build.getProject(),
 
-                Utils.restart((Project<?, ?>) build.getProject(),
-
-                "No difference between last two builds",
-                        Constants.AFTERBUILDRESTART, null);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            "(Afterbuild restart) No difference between last two builds", null);
         }
     }
 
@@ -107,15 +100,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
             PeriodicReincarnationGlobalConfiguration config) {
         final RegEx regEx = Utils.checkBuild(build);
         if (regEx != null && checkRestartDepth(build)) {
-            try {
-                Utils.restart((Project<?, ?>) build.getProject(),
-                        "RegEx hit in console output: " + regEx.getValue(),
-                        Constants.AFTERBUILDRESTART, regEx);
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Utils.restart((Project<?, ?>) build.getProject(),
+                    "(Afterbuild restart) RegEx hit in console output: "
+                            + regEx.getValue(), regEx);
         }
     }
 

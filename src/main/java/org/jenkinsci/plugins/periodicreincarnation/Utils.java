@@ -21,6 +21,7 @@ import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.Result;
 import hudson.model.Run;
+import hudson.remoting.VirtualChannel;
 import hudson.util.IOUtils;
 import hudson.util.RemotingDiagnostics;
 
@@ -78,8 +79,6 @@ public class Utils {
      * 
      * @param project
      *            the project.
-     * @param config
-     *            instance of periodic reincarnation configuration.
      * @param cause
      *            the cause for the restart.
      * @param regEx
@@ -89,21 +88,20 @@ public class Utils {
      * 
      */
     protected static void restart(Project<?, ?> project, String cause,
-            String restartType, RegEx regEx) throws IOException,
-            InterruptedException {
+            RegEx regEx) {
         if (regEx != null) {
-            if (regEx.getDescription() != null
-                    && regEx.getDescription().length() > 0) {
-
-                cause = regEx.getDescription();
+            try {
+                Utils.execAction(project, regEx.getNodeAction(),
+                        regEx.getMasterAction());
+            } catch (IOException e) {
+                LOGGER.warning("I/O Problem executing groovy script.");
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                LOGGER.warning("Interrupt while executing groovy script.");
+                e.printStackTrace();
             }
-            Utils.execAction(project, regEx.getNodeAction(),
-                    regEx.getMasterAction());
         }
-        cause = "(" + restartType + ") " + cause;
         project.scheduleBuild(new PeriodicReincarnationBuildCause(cause));
-        LOGGER.info("Restarting project " + project.getDisplayName() + "..."
-                + cause);
     }
 
     /**
@@ -226,50 +224,31 @@ public class Utils {
      * @throws IOException
      * @throws InterruptedException
      */
-    private static void execAction(Project<?, ?> project, String nodeAction,
+    protected static void execAction(Project<?, ?> project, String nodeAction,
             String masterAction) throws IOException, InterruptedException {
         final Node node = project.getLastBuild().getBuiltOn();
         final Computer slave = node.toComputer();
 
         if (nodeAction != null && nodeAction.length() > 1) {
-            LOGGER.info("executing script in node: " + slave.getName());
-            LOGGER.fine("executing script " + nodeAction + " in node: "
-                    + slave.getName());
-            try {
-                RemotingDiagnostics.executeGroovy(nodeAction,
-                        slave.getChannel());
-            } catch (IOException e) {
-                final String message = "Error: " + e.getMessage()
-                        + "there were problems executing script in "
-                        + slave.getName() + " script: " + nodeAction;
-                LOGGER.warning(message);
-            } catch (InterruptedException e) {
-                final String message = "Error: " + e.getMessage()
-                        + "there were problems executing script in "
-                        + slave.getName() + " script: " + nodeAction;
-                LOGGER.warning(message);
-            }
+            LOGGER.fine("Executing node script");
+            executeGroovyScript(nodeAction, slave.getChannel());
         }
         if (masterAction != null && masterAction.length() > 1) {
-            masterAction = "slave_name = " + "'" + slave.getName() + "'"
-                    + "; \n" + masterAction;
-            LOGGER.info("executing script in master.");
-            LOGGER.fine("executing this script in master: \n " + masterAction
-                    + " in master.");
-            try {
-                RemotingDiagnostics.executeGroovy(masterAction,
-                        Jenkins.MasterComputer.localChannel);
-            } catch (IOException e) {
-                final String message = "Error: " + e.getMessage()
-                        + "there were problems executing script in "
-                        + "the master node. Script: " + masterAction;
-                LOGGER.warning(message);
-            } catch (InterruptedException e) {
-                final String message = "Error: " + e.getMessage()
-                        + "there were problems executing script in "
-                        + "the master node. Script: " + masterAction;
-                LOGGER.warning(message);
-            }
+            LOGGER.fine("Executing master script");
+            executeGroovyScript(nodeAction, Jenkins.MasterComputer.localChannel);
+        }
+    }
+
+    private static void executeGroovyScript(String script,
+            VirtualChannel channel) {
+        try {
+            RemotingDiagnostics.executeGroovy(script, channel);
+        } catch (IOException e) {
+            LOGGER.warning("I/O Problem while executing the following script: "
+                    + script);
+        } catch (InterruptedException e) {
+            LOGGER.warning("Interrupted while executing the following script: "
+                    + script);
         }
     }
 
