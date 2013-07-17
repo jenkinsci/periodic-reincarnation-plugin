@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
-import java.io.IOException;
 import java.util.logging.Logger;
 
 import hudson.model.AsyncPeriodicWork;
@@ -165,12 +164,14 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         String summary = "No difference between the last two builds: "
                 + this.unchangedRestartProjects.size()
                 + " projects scheduled for restart" + "\n";
+        StringBuilder sb = new StringBuilder(); 
         for (Project<?, ?> proj : this.unchangedRestartProjects) {
             Utils.restart(proj,
                     "(Cron restart) No difference between the last two builds",
                     null);
-            summary += "\t" + proj.getDisplayName() + "\n";
+            sb.append("\t" + proj.getDisplayName() + "\n");
         }
+        summary += sb.toString();
         return summary;
     }
 
@@ -185,11 +186,12 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
             summary += getRestartCause(regEx) + ": "
                     + this.regExRestartList.get(regEx).size()
                     + " projects scheduled for restart" + "\n";
-
+            StringBuilder sb = new StringBuilder();            
             for (Project<?, ?> proj : this.regExRestartList.get(regEx)) {
                 Utils.restart(proj, getRestartCause(regEx), regEx);
-                summary += "\t" + proj.getDisplayName() + "\n";
+                sb.append("\t" + proj.getDisplayName() + "\n");
             }
+            summary += sb.toString();
         }
         return summary;
     }

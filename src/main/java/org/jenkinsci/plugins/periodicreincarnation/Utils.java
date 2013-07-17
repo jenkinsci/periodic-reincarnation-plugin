@@ -239,6 +239,14 @@ public class Utils {
         }
     }
 
+    /**
+     * Executes groovy script.
+     * 
+     * @param script
+     *            the script as String.
+     * @param channel
+     *            virtual channel of the node.
+     */
     private static void executeGroovyScript(String script,
             VirtualChannel channel) {
         try {
