@@ -103,8 +103,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         if (cron != null && config.isRestartUnchangedJobsEnabled()) {
             addUnchangedProjects(cron, currentTime);
         }
-
-        printCronRestartProjects();
+        if (scheduledProjects.size() > 0) {
+            restartCronProjects();
+        }
     }
 
     /**
@@ -133,7 +134,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * Prints all projects that are scheduleder for restart by this current cron
      * cycle. Groups them according to the reason they were restarted.
      */
-    private void printCronRestartProjects() {
+    private void restartCronProjects() {
         // Initializ summary. This variables contains the whole output that
         // shows which projects have been restarted during this cron-cycle.
         String summary = "Periodic Reincarnation cron restart summary:" + "\n";
@@ -161,13 +162,13 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * @return the output that should be added to summary String.
      */
     private String restartUnchanged() {
-        String summary = "No difference between the last two builds: "
+        String summary = Constants.NODIFFERENCERESTART + ": "
                 + this.unchangedRestartProjects.size()
                 + " projects scheduled for restart" + "\n";
-        StringBuilder sb = new StringBuilder(); 
+        StringBuilder sb = new StringBuilder();
         for (Project<?, ?> proj : this.unchangedRestartProjects) {
             Utils.restart(proj,
-                    "(Cron restart) No difference between the last two builds",
+                    "(Cron restart) " +  Constants.NODIFFERENCERESTART,
                     null);
             sb.append("\t" + proj.getDisplayName() + "\n");
         }
@@ -186,7 +187,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
             summary += getRestartCause(regEx) + ": "
                     + this.regExRestartList.get(regEx).size()
                     + " projects scheduled for restart" + "\n";
-            StringBuilder sb = new StringBuilder();            
+            StringBuilder sb = new StringBuilder();
             for (Project<?, ?> proj : this.regExRestartList.get(regEx)) {
                 Utils.restart(proj, getRestartCause(regEx), regEx);
                 sb.append("\t" + proj.getDisplayName() + "\n");
