@@ -135,7 +135,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * cycle. Groups them according to the reason they were restarted.
      */
     private void restartCronProjects() {
-        // Initializ summary. This variables contains the whole output that
+        // Initialize summary. This variables contains the whole output that
         // shows which projects have been restarted during this cron-cycle.
         String summary = "Periodic Reincarnation cron restart summary:" + "\n";
         summary += "Number of projects to restart: "

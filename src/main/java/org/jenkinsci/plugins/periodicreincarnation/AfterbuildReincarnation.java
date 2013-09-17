@@ -30,7 +30,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
     /**
      * Tells if this type of restart is enabled.
      */
-    private boolean isEnabled;
+    private boolean isEnabled = false;
+    private boolean isLocallyEnabled = false;
 
     @Override
     public void onCompleted(AbstractBuild<?, ?> build, TaskListener listener) {
@@ -61,11 +62,24 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
             return;
         }
 
-        // check for a regEx hit
-        checkForRegExRestart(build, globalConfig);
+        if (!this.isLocallyEnabled) {
+            // try to restart the project by finding a matching regEx or restart
+            // it because of an unchanged configuration
+            regExRestart(build, globalConfig);
+            noChangeRestart(build, globalConfig);
+        } else {
+            // restart project for which afterbuild restart has been enabled
+            // locally
+            localRestart(build);
+        }
+    }
 
-        checkForNoChangeRestart(build, globalConfig);
-
+    private void localRestart(AbstractBuild<?, ?> build) {
+        if (build.getProject() instanceof Project<?, ?>
+                && checkRestartDepth(build)) {
+            Utils.restart((Project<?, ?>) build.getProject(),
+                    "(Afterbuild restart) Locally configured project.", null);
+        }
     }
 
     /**
@@ -76,12 +90,12 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * @param config
      *            the periodic reincarnation configuration
      */
-    private void checkForNoChangeRestart(AbstractBuild<?, ?> build,
+    private void noChangeRestart(AbstractBuild<?, ?> build,
             PeriodicReincarnationGlobalConfiguration config) {
         if (build.getProject() instanceof Project<?, ?>
+                && config.isRestartUnchangedJobsEnabled()
                 && Utils.qualifyForUnchangedRestart((Project<?, ?>) build
-                        .getProject())
-                && config.isRestartUnchangedJobsEnabled()) {
+                        .getProject()) && checkRestartDepth(build)) {
             Utils.restart((Project<?, ?>) build.getProject(),
 
             "(Afterbuild restart) No difference between last two builds", null);
@@ -96,10 +110,11 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * @param config
      *            the periodic reincarnation configuration
      */
-    private void checkForRegExRestart(AbstractBuild<?, ?> build,
+    private void regExRestart(AbstractBuild<?, ?> build,
             PeriodicReincarnationGlobalConfiguration config) {
         final RegEx regEx = Utils.checkBuild(build);
-        if (regEx != null && checkRestartDepth(build)) {
+        if (regEx != null && checkRestartDepth(build)
+                && build.getProject() instanceof Project<?, ?>) {
             Utils.restart((Project<?, ?>) build.getProject(),
                     "(Afterbuild restart) RegEx hit in console output: "
                             + regEx.getValue(), regEx);
@@ -118,6 +133,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
             PeriodicReincarnationGlobalConfiguration config) {
         if (localconfig != null && localconfig.getIsLocallyConfigured()) {
             this.isEnabled = localconfig.getIsEnabled();
+            this.isLocallyEnabled = localconfig.getIsEnabled();
             this.maxRestartDepth = localconfig.getMaxDepth();
         } else {
             this.isEnabled = config.isTriggerActive();

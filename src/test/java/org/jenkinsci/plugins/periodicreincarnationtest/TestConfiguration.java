@@ -150,6 +150,7 @@ public class TestConfiguration extends HudsonTestCase {
         final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem(
                 "test_job");
         assertNotNull("job missing.. @LocalData problem?", job1);
+        
         assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
         System.out.println("JOB1 LOG:"
                 + job1.getLastBuild().getLogFile().toString());
