@@ -1,7 +1,5 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
-import java.io.IOException;
-
 import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalConfiguration.RegEx;
 
 import hudson.Extension;
@@ -28,10 +26,13 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
     private int maxRestartDepth;
 
     /**
-     * Tells if this type of restart is enabled.
+     * Tells if this type of restart is enabled(either globally or locally).
      */
-    private boolean isEnabled = false;
-    private boolean isLocallyEnabled = false;
+    private boolean isEnabled;
+    /**
+     * Tells if the afterbuild restart was configured locally.
+     */
+    private boolean isLocallyEnabled;
 
     @Override
     public void onCompleted(AbstractBuild<?, ?> build, TaskListener listener) {
@@ -74,6 +75,13 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         }
     }
 
+    /**
+     * Method to restart a given project if it was configured locally. Here we
+     * should check for no regular expressions that match our project. If the
+     * maximal depth is not reached we restart.
+     * 
+     * @param build
+     */
     private void localRestart(AbstractBuild<?, ?> build) {
         if (build.getProject() instanceof Project<?, ?>
                 && checkRestartDepth(build)) {
@@ -96,9 +104,10 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
                 && config.isRestartUnchangedJobsEnabled()
                 && Utils.qualifyForUnchangedRestart((Project<?, ?>) build
                         .getProject()) && checkRestartDepth(build)) {
-            Utils.restart((Project<?, ?>) build.getProject(),
-
-            "(Afterbuild restart) No difference between last two builds", null);
+            Utils.restart(
+                    (Project<?, ?>) build.getProject(),
+                    "(Afterbuild restart) No difference between last two builds",
+                    null);
         }
     }
 
@@ -125,9 +134,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * Retrieves values from global or local config.
      * 
      * @param localconfig
-     *            localconfiguration
+     *            Local configuration.
      * @param config
-     *            globalconfiguration
+     *            Global configuration.
      */
     private void setConfigVariables(JobLocalConfiguration localconfig,
             PeriodicReincarnationGlobalConfiguration config) {
@@ -145,8 +154,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * Checks the restart depth for the current project.
      * 
      * @param build
-     *            the current build
-     * @return true if check has passed, false otherwise
+     *            The current build.
+     * @return true if restart depth is larger than the consecutive restarts for
+     *         this project, false otherwise.
      */
     private boolean checkRestartDepth(AbstractBuild<?, ?> build) {
         if (this.maxRestartDepth <= 0) {

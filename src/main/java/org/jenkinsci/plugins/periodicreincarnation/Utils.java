@@ -215,14 +215,14 @@ public class Utils {
      * 
      * @param project
      *            the project
-     * @param config
-     *            the configuration
      * @param nodeAction
      *            the nodeAction
      * @param masterAction
      *            the masterAction
      * @throws IOException
+     *             input/output problem
      * @throws InterruptedException
+     *             interrupt exception
      */
     protected static void execAction(Project<?, ?> project, String nodeAction,
             String masterAction) throws IOException, InterruptedException {

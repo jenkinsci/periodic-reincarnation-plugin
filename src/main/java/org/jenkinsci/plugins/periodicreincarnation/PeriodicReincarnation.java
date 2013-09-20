@@ -167,9 +167,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                 + " projects scheduled for restart" + "\n";
         StringBuilder sb = new StringBuilder();
         for (Project<?, ?> proj : this.unchangedRestartProjects) {
-            Utils.restart(proj,
-                    "(Cron restart) " +  Constants.NODIFFERENCERESTART,
-                    null);
+            Utils.restart(proj, "(Cron restart) "
+                    + Constants.NODIFFERENCERESTART, null);
             sb.append("\t" + proj.getDisplayName() + "\n");
         }
         summary += sb.toString();
@@ -177,24 +176,26 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Restarts all projects found via RegEx Hit.
+     * Restarts all projects found via RegEx Hit. Also produces log information
+     * and returns it upon exit.
      * 
      * @return the output that should be added to summary String.
      */
     private String restartRegExProjects() {
-        String summary = "";
+        StringBuilder summary = new StringBuilder();
         for (RegEx regEx : this.regExRestartList.keySet()) {
-            summary += getRestartCause(regEx) + ": "
+            summary.append(getRestartCause(regEx) + ": "
                     + this.regExRestartList.get(regEx).size()
-                    + " projects scheduled for restart" + "\n";
+                    + " projects scheduled for restart" + "\n");
             StringBuilder sb = new StringBuilder();
             for (Project<?, ?> proj : this.regExRestartList.get(regEx)) {
                 Utils.restart(proj, getRestartCause(regEx), regEx);
                 sb.append("\t" + proj.getDisplayName() + "\n");
             }
-            summary += sb.toString();
+
+            summary.append(sb.toString());
         }
-        return summary;
+        return summary.toString();
     }
 
     /**

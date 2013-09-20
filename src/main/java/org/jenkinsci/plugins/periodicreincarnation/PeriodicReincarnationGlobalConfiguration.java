@@ -1,13 +1,12 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
-import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import hudson.scheduler.CronTab;
 import hudson.AbortException;
 import hudson.Extension;
-import hudson.scheduler.CronTab;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 
@@ -20,10 +19,11 @@ import jenkins.model.GlobalConfiguration;
 
 /**
  * Implements the interface GlobalConfiguration from Jenkins. Gives the option
- * to configure how this plugin works, what should be restarted, when it should
- * be restarted and what should appear in the log file. With the help of the
- * load() and save() method the configuration is loaded when instancing this
- * class and saved when changing it.
+ * to configure how this plugin works, what should be restarted and when it
+ * should be restarted.. With the help of the load() and save() method the
+ * configuration is loaded when instancing this class and saved when changing
+ * it. This class has a corresponding jelly file that represents a section in
+ * the global configuration.
  * 
  * @author yboev
  * 
@@ -32,6 +32,11 @@ import jenkins.model.GlobalConfiguration;
 public class PeriodicReincarnationGlobalConfiguration extends
         GlobalConfiguration {
 
+    /**
+     * Logger for PeriodicReincarnation.
+     */
+    private static final Logger LOGGER = Logger
+            .getLogger(PeriodicReincarnationGlobalConfiguration.class.getName());
     /**
      * Shows if the cron restart of failed jobs is active or disabled.
      */
@@ -125,6 +130,10 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * was invalid.
      * 
      * @return Returns ok if cron time was correct, error message otherwise.
+     * @throws ANTLRException
+     *             {@inheritDoc}
+     * @throws NullPointerException
+     *             cronTime was null.
      */
     public FormValidation doCheckCronTime() throws ANTLRException,
             NullPointerException {
@@ -139,6 +148,11 @@ public class PeriodicReincarnationGlobalConfiguration extends
         }
     }
 
+    /**
+     * Checks if all regular expressions entered can be compiler.
+     * 
+     * @return
+     */
     public FormValidation doCheckRegExprs() {
         for (RegEx regEx : this.regExprs) {
             try {
@@ -385,6 +399,16 @@ public class PeriodicReincarnationGlobalConfiguration extends
             return masterAction;
         }
 
+        /**
+         * Checks if the current time corresponds to the cron tab configured for
+         * this RegEx. If such cron tab is missing or could not be parsed then
+         * the global cron tab is used.
+         * 
+         * @param currentTime
+         *            current time from System
+         * @return true if global cron time covers the current time, false
+         *         otherwise.
+         */
         public boolean isTimeToRestart(long currentTime) {
             CronTab regExCronTab = null;
             CronTab globalExCronTab = null;
@@ -393,18 +417,20 @@ public class PeriodicReincarnationGlobalConfiguration extends
                     regExCronTab = new CronTab(this.getCronTime());
                 }
             } catch (ANTLRException e) {
-                // reg ex could not be parsed.
+                LOGGER.warning("RegEx cron tab could not be parsed!");
             }
             try {
-                if(PeriodicReincarnationGlobalConfiguration.get()
+                if (PeriodicReincarnationGlobalConfiguration.get()
                         .getCronTime() != null) {
                     globalExCronTab = new CronTab(
                             PeriodicReincarnationGlobalConfiguration.get()
                                     .getCronTime());
                 }
             } catch (ANTLRException e) {
-                // global regex could not be parsed.
+                LOGGER.warning("Global cron tab could not be üarsed!");
             }
+            // if global regExCronTab is available use it, if not go with the
+            // global.
             if (regExCronTab != null) {
                 return (regExCronTab.ceil(currentTime).getTimeInMillis()
                         - currentTime == 0);

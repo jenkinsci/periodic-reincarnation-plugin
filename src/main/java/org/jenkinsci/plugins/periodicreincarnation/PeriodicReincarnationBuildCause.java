@@ -15,11 +15,10 @@ public class PeriodicReincarnationBuildCause extends Cause {
     private String restartCause;
 
     /**
-     * Constructor. Also adds the reason why this particular job has been
-     * restarted.
+     * Constructor.
      * 
      * @param s
-     *            the reason/cause of restart.
+     *            The reason/cause for restart.
      */
     public PeriodicReincarnationBuildCause(String s) {
         super();

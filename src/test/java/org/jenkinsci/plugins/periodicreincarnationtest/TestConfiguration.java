@@ -67,14 +67,16 @@ public class TestConfiguration extends HudsonTestCase {
         try {
             TimeUnit.SECONDS.sleep(50);
         } catch (InterruptedException e) {
-            // we have been interrupted
+            // we have been interrupted and test will probably fail due to lack
+            // of time.
         }
 
         checkConfiguredValues();
         try {
             TimeUnit.SECONDS.sleep(100);
         } catch (InterruptedException e) {
-            // we have been interrupted
+            // we have been interrupted and test will probably fail due to lack
+            // of time.
         }
         assertEquals(2, this.config.getMaxDepth());
 
@@ -150,7 +152,7 @@ public class TestConfiguration extends HudsonTestCase {
         final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem(
                 "test_job");
         assertNotNull("job missing.. @LocalData problem?", job1);
-        
+
         assertEquals(Result.FAILURE, job1.getLastBuild().getResult());
         System.out.println("JOB1 LOG:"
                 + job1.getLastBuild().getLogFile().toString());
