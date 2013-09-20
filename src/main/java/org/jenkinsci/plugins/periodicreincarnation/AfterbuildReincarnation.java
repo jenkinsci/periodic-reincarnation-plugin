@@ -66,7 +66,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         if (!this.isLocallyEnabled) {
             // try to restart the project by finding a matching regEx or restart
             // it because of an unchanged configuration
-            regExRestart(build, globalConfig);
+            regExRestart(build);
             noChangeRestart(build, globalConfig);
         } else {
             // restart project for which afterbuild restart has been enabled
@@ -81,6 +81,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * maximal depth is not reached we restart.
      * 
      * @param build
+     *            The current build.
      */
     private void localRestart(AbstractBuild<?, ?> build) {
         if (build.getProject() instanceof Project<?, ?>
@@ -116,11 +117,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * 
      * @param build
      *            the build
-     * @param config
-     *            the periodic reincarnation configuration
      */
-    private void regExRestart(AbstractBuild<?, ?> build,
-            PeriodicReincarnationGlobalConfiguration config) {
+    private void regExRestart(AbstractBuild<?, ?> build) {
         final RegEx regEx = Utils.checkBuild(build);
         if (regEx != null && checkRestartDepth(build)
                 && build.getProject() instanceof Project<?, ?>) {

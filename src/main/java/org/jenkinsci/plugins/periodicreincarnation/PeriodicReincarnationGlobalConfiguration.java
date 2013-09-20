@@ -151,7 +151,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
     /**
      * Checks if all regular expressions entered can be compiler.
      * 
-     * @return
+     * @return true if all RegExs can be compiled, false otherwise.
      */
     public FormValidation doCheckRegExprs() {
         for (RegEx regEx : this.regExprs) {

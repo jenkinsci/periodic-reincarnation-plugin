@@ -209,9 +209,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         String restartCause;
         if (regEx.getDescription() != null
                 && regEx.getDescription().length() > 1) {
-            restartCause = regEx.getDescription();
+            restartCause = regEx.getDescription() + ":" + regEx.getValue();
         } else {
-            restartCause = regEx.getValue();
+            restartCause = "RegEx hit:" + regEx.getValue();
         }
         return restartCause;
     }
