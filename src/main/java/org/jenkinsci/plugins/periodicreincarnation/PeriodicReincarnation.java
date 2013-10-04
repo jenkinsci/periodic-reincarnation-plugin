@@ -165,7 +165,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         String summary = Constants.NODIFFERENCERESTART + ": "
                 + this.unchangedRestartProjects.size()
                 + " projects scheduled for restart" + "\n";
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         for (Project<?, ?> proj : this.unchangedRestartProjects) {
             Utils.restart(proj, "(Cron restart) "
                     + Constants.NODIFFERENCERESTART, null);
@@ -187,7 +187,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
             summary.append(getRestartCause(regEx) + ": "
                     + this.regExRestartList.get(regEx).size()
                     + " projects scheduled for restart" + "\n");
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             for (Project<?, ?> proj : this.regExRestartList.get(regEx)) {
                 Utils.restart(proj, getRestartCause(regEx), regEx);
                 sb.append("\t" + proj.getDisplayName() + "\n");
@@ -237,7 +237,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                         if (this.regExRestartList.containsKey(regEx)) {
                             this.regExRestartList.get(regEx).add(project);
                         } else {
-                            ArrayList<Project<?, ?>> newList = new ArrayList<Project<?, ?>>();
+                            final ArrayList<Project<?, ?>> newList = new ArrayList<Project<?, ?>>();
                             newList.add(project);
                             this.regExRestartList.put(regEx, newList);
                         }

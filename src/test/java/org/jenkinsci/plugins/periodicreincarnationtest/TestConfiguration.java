@@ -97,7 +97,7 @@ public class TestConfiguration extends HudsonTestCase {
         assertNotNull(config);
         assertEquals("* * * * *", config.getCronTime());
         try {
-            config.doCheckCronTime();
+            config.doCheckCronTime(config.getCronTime());
         } catch (ANTLRException e) {
             Assert.fail();
         } catch (NullPointerException e2) {

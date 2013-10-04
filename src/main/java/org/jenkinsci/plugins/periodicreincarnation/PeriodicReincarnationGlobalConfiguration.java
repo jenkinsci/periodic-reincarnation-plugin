@@ -11,6 +11,7 @@ import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
 import antlr.ANTLRException;
@@ -135,16 +136,16 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * @throws NullPointerException
      *             cronTime was null.
      */
-    public FormValidation doCheckCronTime() throws ANTLRException,
-            NullPointerException {
+    public FormValidation doCheckCronTime(@QueryParameter String value)
+            throws ANTLRException, NullPointerException {
         try {
-            new CronTab(cronTime);
+            new CronTab(value);
             return FormValidation.ok();
         } catch (ANTLRException e) {
             return FormValidation
                     .error("Cron time could not be parsed. Please check for type errors!");
         } catch (NullPointerException e) {
-            return FormValidation.error("Cron time was null");
+            return FormValidation.error("Cron time is null.");
         }
     }
 
@@ -153,17 +154,12 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * 
      * @return true if all RegExs can be compiled, false otherwise.
      */
-    public FormValidation doCheckRegExprs() {
-        for (RegEx regEx : this.regExprs) {
-            try {
-                Pattern.compile(regEx.getValue());
-            } catch (PatternSyntaxException e) {
-                return FormValidation
-                        .error("RegEx could not be compiled, check for type errors!");
-            }
-        }
-        return FormValidation.ok();
-    }
+    /*
+     * public FormValidation doCheckRegExprs(@QueryParameter ) { try { return
+     * FormValidation.ok(); } catch (PatternSyntaxException e) { return
+     * FormValidation
+     * .error("RegEx could not be compiled, check for type errors!"); } }
+     */
 
     /**
      * Finds and returns the configuration class.
@@ -192,25 +188,6 @@ public class PeriodicReincarnationGlobalConfiguration extends
     public boolean isRestartUnchangedJobsEnabled() {
         return (this.noChange != null && this.noChange.equals("true"));
     }
-
-    /**
-     * Returns the field logInfo.
-     * 
-     * @return logInfo.
-     */
-    /*
-     * public String getLogInfo() { return this.logInfo; }
-     */
-
-    /**
-     * Tells if printing in log is enabled or not.
-     * 
-     * @return true if enabled, false otherwise.
-     */
-    /*
-     * public boolean isLogInfoEnabled() { return (this.logInfo != null &&
-     * this.logInfo.equals("true")); }
-     */
 
     /**
      * Returns a list containing all regular expressions.
