@@ -1,6 +1,6 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
-import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalConfiguration.RegEx;
+import org.jenkinsci.plugins.periodicreincarnation.RegEx;
 
 import hudson.Extension;
 import hudson.model.TaskListener;

@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 
 import jenkins.model.Jenkins;
 
-import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalConfiguration.RegEx;
+import org.jenkinsci.plugins.periodicreincarnation.RegEx;
 
 import hudson.AbortException;
 import hudson.model.AbstractBuild;

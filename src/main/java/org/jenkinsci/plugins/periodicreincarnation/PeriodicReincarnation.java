@@ -9,7 +9,7 @@ import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
 
-import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalConfiguration.RegEx;
+import org.jenkinsci.plugins.periodicreincarnation.RegEx;
 
 import antlr.ANTLRException;
 
