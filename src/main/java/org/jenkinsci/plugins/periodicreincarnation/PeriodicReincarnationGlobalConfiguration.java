@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
 import hudson.scheduler.CronTab;
 import hudson.AbortException;
 import hudson.Extension;
@@ -153,16 +152,38 @@ public class PeriodicReincarnationGlobalConfiguration extends
     }
 
     /**
-     * Checks if all regular expressions entered can be compiler.
+     * Checks if a regular expression entered be compiled.
      * 
-     * @return true if all RegExs can be compiled, false otherwise.
+     * @return true if the RegEx can be compiled, false otherwise.
      */
-    /*
-     * public FormValidation doCheckRegExprs(@QueryParameter ) { try { return
-     * FormValidation.ok(); } catch (PatternSyntaxException e) { return
-     * FormValidation
-     * .error("RegEx could not be compiled, check for type errors!"); } }
+
+    public FormValidation doCheckRegExValue(@QueryParameter String value) {
+        if(value.equals("")) {
+            return FormValidation.warning("RegEx is empty.");
+        }
+        try {
+            Pattern.compile(value);
+            return FormValidation.ok();
+        } catch (PatternSyntaxException e) {
+            return FormValidation.error("RegEx cannot be compiled!");
+        }
+    }
+
+    /**
+     * Checks if a cron tab for a regEx can be compiled.
+     * 
+     * @return true if the cron tab can be compiled, false otherwise.
+     * @throws ANTLRException
+     * @throws NullPointerException
      */
+
+    public FormValidation doCheckRegExCronTime(@QueryParameter String value)
+            throws NullPointerException, ANTLRException {
+        if(value.equals("")) {
+            return FormValidation.warning("Global cron time will be used for this regular expression.");
+        }
+        return this.doCheckCronTime(value);
+    }
 
     /**
      * Finds and returns the configuration class.

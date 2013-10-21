@@ -5,15 +5,10 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
 
 import antlr.ANTLRException;
 import hudson.AbortException;
-import hudson.Extension;
-import hudson.model.AbstractDescribableImpl;
-import hudson.model.Descriptor;
 import hudson.scheduler.CronTab;
-import hudson.util.FormValidation;
 
 /**
  * Class for handling regular expressions.
@@ -21,7 +16,7 @@ import hudson.util.FormValidation;
  * @author yboev
  * 
  */
-public class RegEx extends AbstractDescribableImpl<RegEx> {
+public class RegEx {
     
     /**
      * Logger for PeriodicReincarnation.
@@ -74,6 +69,7 @@ public class RegEx extends AbstractDescribableImpl<RegEx> {
         this.nodeAction = nodeAction;
         this.masterAction = masterAction;
     }
+        
 
     /**
      * Returns this reg ex.
@@ -103,7 +99,7 @@ public class RegEx extends AbstractDescribableImpl<RegEx> {
     }
 
     /**
-     * Returns the pattern correspondin to this reg ex.
+     * Returns the pattern corresponding to this reg ex.
      * 
      * @return the pattern.
      * @throws AbortException
@@ -155,7 +151,7 @@ public class RegEx extends AbstractDescribableImpl<RegEx> {
                 regExCronTab = new CronTab(this.getCronTime());
             }
         } catch (ANTLRException e) {
-            LOGGER.warning("RegEx cron tab could not be parsed!");
+            LOGGER.warning("RegEx cron tab could not be parsed! Trying to use global instead...");
         }
         try {
             if (PeriodicReincarnationGlobalConfiguration.get().getCronTime() != null) {
@@ -179,30 +175,4 @@ public class RegEx extends AbstractDescribableImpl<RegEx> {
         return false;
 
     }
-
-    @Extension
-    public static class DescriptorImpl extends Descriptor<RegEx> {
-
-        /**
-         * Performs on-the-fly validation on the name of the parser that needs
-         * to be unique.
-         * 
-         * @param name
-         *            the name of the parser
-         * @return the validation result
-         */
-        public FormValidation doCheckValue(@QueryParameter final String value) {
-            return FormValidation.error("checked!");
-        }
-        
-        public FormValidation doCheckCronTime(@QueryParameter final String cronTime) {
-            return FormValidation.error("checked!");
-        }
-
-        @Override
-        public String getDisplayName() {
-            return "";
-        }
-    }
-
 }

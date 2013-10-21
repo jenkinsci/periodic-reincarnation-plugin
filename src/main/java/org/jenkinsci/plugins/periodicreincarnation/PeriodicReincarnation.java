@@ -1,6 +1,7 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
 import java.util.logging.Logger;
+import java.util.regex.PatternSyntaxException;
 
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.Result;
@@ -8,8 +9,10 @@ import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
+import hudson.util.FormValidation;
 
 import org.jenkinsci.plugins.periodicreincarnation.RegEx;
+import org.kohsuke.stapler.QueryParameter;
 
 import antlr.ANTLRException;
 
@@ -131,7 +134,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Prints all projects that are scheduleder for restart by this current cron
+     * Prints all projects that are scheduled for restart in this current cron
      * cycle. Groups them according to the reason they were restarted.
      */
     private void restartCronProjects() {
@@ -209,9 +212,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         String restartCause;
         if (regEx.getDescription() != null
                 && regEx.getDescription().length() > 1) {
-            restartCause = regEx.getDescription() + ":" + regEx.getValue();
+            restartCause = regEx.getDescription() + "(" + regEx.getValue()+ ")";
         } else {
-            restartCause = "RegEx hit:" + regEx.getValue();
+            restartCause = "RegEx hit: " + regEx.getValue();
         }
         return restartCause;
     }
@@ -229,9 +232,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
             if (regEx.isTimeToRestart(currentTime)) {
                 for (Project<?, ?> project : Hudson.getInstance().getProjects()) {
                     if (isValidCandidateForRestart(project)
-                            && Utils.checkBuild(project.getLastBuild(), regEx)
                             && !scheduledProjects.contains(project
-                                    .getFullDisplayName())) {
+                                    .getFullDisplayName())
+                            && Utils.checkBuild(project.getLastBuild(), regEx)) {
                         this.scheduledProjects
                                 .add(project.getFullDisplayName());
                         if (this.regExRestartList.containsKey(regEx)) {
@@ -288,6 +291,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      */
     private boolean isValidCandidateForRestart(final Project<?, ?> project) {
         return project != null
+                && !project.isDisabled()
                 && project.isBuildable()
                 && project.getLastBuild() != null
                 && project.getLastBuild().getResult() != null

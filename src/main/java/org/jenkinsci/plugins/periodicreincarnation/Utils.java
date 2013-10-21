@@ -63,7 +63,7 @@ public class Utils {
                 && secondLastBuild != null
                 && secondLastBuild.getResult() != null
                 && secondLastBuild.getResult().isBetterThan(Result.FAILURE)
-                && !changesBetweenTwoBuilds(lastBuild)) {
+                && !areThereSCMChanges(lastBuild)) {
             // last build failed, but second one didn't and there were no
             // changes between the two builds
             // in this case we restart the build
@@ -188,7 +188,7 @@ public class Utils {
                 }
             }
         } catch (IOException e) {
-            LOGGER.warning("File could not be read!");
+            LOGGER.warning("No such file: " + file.getPath());
         } finally {
             IOUtils.closeQuietly(reader);
         }
@@ -203,7 +203,7 @@ public class Utils {
      *            the last build that failed.
      * @return true if there is at least one change, false otherwise.
      */
-    private static boolean changesBetweenTwoBuilds(Run<?, ?> build1) {
+    private static boolean areThereSCMChanges(Run<?, ?> build1) {
         if (build1 instanceof AbstractBuild) {
             return !((AbstractBuild<?, ?>) build1).getChangeSet().isEmptySet();
         }

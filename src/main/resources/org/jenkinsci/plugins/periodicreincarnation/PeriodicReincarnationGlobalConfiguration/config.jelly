@@ -21,7 +21,7 @@ xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
         		<table width="100%">
           
          			<f:entry title="${%title.regex}">
-            			<f:textbox name="regExprs.value" value="${regExprs.getValue()}" />
+            			<f:textbox field="regExValue" name="regExprs.value" value="${regExprs.getValue()}" />
           	 		</f:entry>
           	 		
           	 		<f:entry title="${%regex.description}">
@@ -29,7 +29,7 @@ xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
           	 		</f:entry>
           	 		
           	 		<f:entry title="${%regex.cron}">
-            			<f:textbox name="regExprs.cronTime" value="${regExprs.getCronTime()}" />
+						<f:textbox field="regExCronTime" name="regExprs.cronTime" value="${regExprs.getCronTime()}" />
           	 		</f:entry>
           
          			<f:entry title="${%title.nodeAction}">
