@@ -39,11 +39,10 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * @param isLocallyConfigured tells if local config is enabled.
      */
     @DataBoundConstructor
-    public JobLocalConfiguration(boolean isEnabled, int maxDepth,
-            boolean isLocallyConfigured) {
+    public JobLocalConfiguration(boolean isEnabled, int maxDepth) {
+        this.isLocallyConfigured = true;
         this.isEnabled = isEnabled;
         this.maxDepth = maxDepth;
-        this.isLocallyConfigured = isLocallyConfigured;
     }
     
     /**
@@ -51,7 +50,7 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * @return isEnabled value.
      */
     public boolean getIsEnabled() {
-        return isEnabled;
+        return this.isEnabled;
     }
 
     /**
@@ -59,7 +58,7 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * @return maxDepth value.
      */
     public int getMaxDepth() {
-        return maxDepth;
+        return this.maxDepth;
     }
     
     /**
@@ -113,7 +112,8 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
         public boolean isApplicable(AbstractProject<?, ?> item) {
             return true;
         }
-
+        
+        /*
         @Override
         public JobProperty<?> newInstance(StaplerRequest req,
                 JSONObject formData) throws FormException {
@@ -133,6 +133,6 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
                 newData.put("isLocallyConfigured", "false");
             }
             return super.newInstance(req, newData);
-        }
+        }*/
     }
 }
