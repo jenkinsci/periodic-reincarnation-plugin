@@ -13,11 +13,12 @@ import hudson.model.Job;
 
 /**
  * Local configuration class.
+ * 
  * @author yboev
- *
+ * 
  */
 public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
-    
+
     /**
      * Tells if restart is enabled for this project.
      */
@@ -26,27 +27,32 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * Max restart depth.
      */
     private int maxDepth;
-    
+
     /**
-     * Tells if this project is locally configured(true means we override global values).
+     * Tells if this project is locally configured(true means we override global
+     * values).
      */
     private boolean isLocallyConfigured;
 
     /**
      * Contructor for data binding of form data.
-     * @param isEnabled true if activated.
-     * @param maxDepth max restart depth
-     * @param isLocallyConfigured tells if local config is enabled.
+     * 
+     * @param isEnabled
+     *            true if activated.
+     * @param maxDepth
+     *            max restart depth
+     * @param isLocallyConfigured
+     *            tells if local config is enabled.
      */
     @DataBoundConstructor
     public JobLocalConfiguration(boolean isEnabled, int maxDepth) {
-        this.isLocallyConfigured = true;
         this.isEnabled = isEnabled;
         this.maxDepth = maxDepth;
     }
-    
+
     /**
      * Returns isEnabled.
+     * 
      * @return isEnabled value.
      */
     public boolean getIsEnabled() {
@@ -55,25 +61,28 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
 
     /**
      * Returns maxDepth.
+     * 
      * @return maxDepth value.
      */
     public int getMaxDepth() {
         return this.maxDepth;
     }
-    
+
     /**
      * Returns isLocallyConfigured.
+     * 
      * @return isLocallyConfigured value.
      */
     public boolean getIsLocallyConfigured() {
-        return isLocallyConfigured;
+        // return isLocallyConfigured;
+        return false;
     }
 
     @Override
     public DescriptorImpl getDescriptor() {
         return DESCRIPTOR;
     }
-    
+
     /**
      * Descriptor object.
      */
@@ -82,8 +91,9 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
 
     /**
      * Implementation of the descriptor object.
+     * 
      * @author yboev
-     *
+     * 
      */
     public static final class DescriptorImpl extends JobPropertyDescriptor {
 
@@ -112,27 +122,21 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
         public boolean isApplicable(AbstractProject<?, ?> item) {
             return true;
         }
-        
-        /*
-        @Override
-        public JobProperty<?> newInstance(StaplerRequest req,
-                JSONObject formData) throws FormException {
 
-            final JSONObject newData = new JSONObject();
-            if (formData.containsKey("isLocallyConfigured")) {
-                newData.put("isEnabled",
-                        formData.getJSONObject("isLocallyConfigured")
-                                .getString("isEnabled"));
-                newData.put("maxDepth",
-                        formData.getJSONObject("isLocallyConfigured")
-                                .getString("maxDepth"));
-                newData.put("isLocallyConfigured", "true");
-            } else {
-                newData.put("isEnabled", "false");
-                newData.put("maxDepth", "");
-                newData.put("isLocallyConfigured", "false");
-            }
-            return super.newInstance(req, newData);
-        }*/
+        /*
+         * @Override public JobProperty<?> newInstance(StaplerRequest req,
+         * JSONObject formData) throws FormException {
+         * 
+         * final JSONObject newData = new JSONObject(); if
+         * (formData.containsKey("isLocallyConfigured")) {
+         * newData.put("isEnabled",
+         * formData.getJSONObject("isLocallyConfigured")
+         * .getString("isEnabled")); newData.put("maxDepth",
+         * formData.getJSONObject("isLocallyConfigured")
+         * .getString("maxDepth")); newData.put("isLocallyConfigured", "true");
+         * } else { newData.put("isEnabled", "false"); newData.put("maxDepth",
+         * ""); newData.put("isLocallyConfigured", "false"); } return
+         * super.newInstance(req, newData); }
+         */
     }
 }
