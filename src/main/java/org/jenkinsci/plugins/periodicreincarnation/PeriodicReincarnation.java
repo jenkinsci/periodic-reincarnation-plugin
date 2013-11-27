@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
 import java.util.logging.Logger;
-import java.util.regex.PatternSyntaxException;
 
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.Result;
@@ -9,13 +8,8 @@ import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
-import hudson.util.FormValidation;
-
-import org.jenkinsci.plugins.periodicreincarnation.RegEx;
-import org.kohsuke.stapler.QueryParameter;
 
 import antlr.ANTLRException;
-
 import hudson.Extension;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -125,10 +119,21 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         return count;
     }
 
+    /**
+     * Counts the projects that will be restarted in this cycle.
+     * 
+     * @return the number as int.
+     */
     private int countProjectsForRestart() {
         return this.scheduledProjects.size();
     }
 
+    /**
+     * Counts the projects that will be restarted becaue of unchanged restart in
+     * this cycle.
+     * 
+     * @return the number as int.
+     */
     private int getNumberOfProjectsForUnchangedRestart() {
         return this.unchangedRestartProjects.size();
     }
@@ -185,7 +190,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * @return the output that should be added to summary String.
      */
     private String restartRegExProjects() {
-        StringBuilder summary = new StringBuilder();
+        final StringBuilder summary = new StringBuilder();
         for (RegEx regEx : this.regExRestartList.keySet()) {
             summary.append(getRestartCause(regEx) + ": "
                     + this.regExRestartList.get(regEx).size()
@@ -212,7 +217,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         String restartCause;
         if (regEx.getDescription() != null
                 && regEx.getDescription().length() > 1) {
-            restartCause = regEx.getDescription() + "(" + regEx.getValue()+ ")";
+            restartCause = regEx.getDescription() + "(" + regEx.getValue()
+                    + ")";
         } else {
             restartCause = "RegEx hit: " + regEx.getValue();
         }
@@ -276,7 +282,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                 }
             }
         } catch (ANTLRException e1) {
-            LOGGER.warning("Global cron time could not be parsed!");
+            LOGGER.fine("Global cron time could not be parsed!");
             e1.printStackTrace();
         }
     }

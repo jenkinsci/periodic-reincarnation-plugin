@@ -5,9 +5,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import hudson.model.AbstractDescribableImpl;
 import hudson.scheduler.CronTab;
-import hudson.AbortException;
 import hudson.Extension;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
@@ -35,11 +33,6 @@ import jenkins.model.GlobalConfiguration;
 public class PeriodicReincarnationGlobalConfiguration extends
         GlobalConfiguration {
 
-    /**
-     * Logger for PeriodicReincarnation.
-     */
-    private static final Logger LOGGER = Logger
-            .getLogger(PeriodicReincarnationGlobalConfiguration.class.getName());
     /**
      * Shows if the cron restart of failed jobs is active or disabled.
      */
@@ -154,11 +147,13 @@ public class PeriodicReincarnationGlobalConfiguration extends
     /**
      * Checks if a regular expression entered be compiled.
      * 
+     * @param value
+     *            the value of the reg ex to be checked.
      * @return true if the RegEx can be compiled, false otherwise.
      */
 
     public FormValidation doCheckRegExValue(@QueryParameter String value) {
-        if(value.equals("")) {
+        if (value.equals("")) {
             return FormValidation.warning("RegEx is empty.");
         }
         try {
@@ -179,8 +174,9 @@ public class PeriodicReincarnationGlobalConfiguration extends
 
     public FormValidation doCheckRegExCronTime(@QueryParameter String value)
             throws NullPointerException, ANTLRException {
-        if(value.equals("")) {
-            return FormValidation.warning("Global cron time will be used for this regular expression.");
+        if (value.equals("")) {
+            return FormValidation
+                    .warning("Global cron time will be used for this regular expression.");
         }
         return this.doCheckCronTime(value);
     }
