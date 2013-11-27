@@ -151,7 +151,7 @@ public class RegEx {
                 regExCronTab = new CronTab(this.getCronTime());
             }
         } catch (ANTLRException e) {
-            LOGGER.warning("RegEx cron tab could not be parsed! Trying to use global instead...");
+            LOGGER.fine("RegEx cron tab could not be parsed or is empty! Trying to use global instead...");
         }
         try {
             if (PeriodicReincarnationGlobalConfiguration.get().getCronTime() != null) {
