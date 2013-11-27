@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
+import java.util.logging.Logger;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.Extension;
 import hudson.model.JobProperty;
@@ -15,20 +17,19 @@ import hudson.model.Job;
  */
 public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
 
-    /**
-     * Tells if restart is enabled for this project.
-     */
-    private boolean isEnabled;
-    /**
-     * Max restart depth.
-     */
-    private int maxDepth;
+    private static final Logger LOGGER = Logger
+            .getLogger(JobLocalConfiguration.class.getName());
 
     /**
      * Tells if this project is locally configured(true means we override global
      * values).
      */
     private boolean isLocallyConfigured;
+
+    /**
+     * Instance of the localValues nested class.
+     */
+    private LocalValues localValues;
 
     /**
      * Contructor for data binding of form data.
@@ -41,9 +42,15 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      *            tells if local config is enabled.
      */
     @DataBoundConstructor
-    public JobLocalConfiguration(boolean isEnabled, int maxDepth) {
-        this.isEnabled = isEnabled;
-        this.maxDepth = maxDepth;
+    public JobLocalConfiguration(LocalValues optionalBlock) {
+        LOGGER.info("CONSTRUCTOR called...");
+        if (optionalBlock != null) {
+            this.isLocallyConfigured = true;
+            this.localValues = optionalBlock;
+        } else {
+            LOGGER.info("FALSE...");
+            this.isLocallyConfigured = false;
+        }
     }
 
     /**
@@ -52,7 +59,7 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * @return isEnabled value.
      */
     public boolean getIsEnabled() {
-        return this.isEnabled;
+        return this.localValues.isEnabled;
     }
 
     /**
@@ -61,7 +68,7 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * @return maxDepth value.
      */
     public int getMaxDepth() {
-        return this.maxDepth;
+        return this.localValues.maxDepth;
     }
 
     /**
@@ -70,8 +77,7 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * @return isLocallyConfigured value.
      */
     public boolean getIsLocallyConfigured() {
-        // return isLocallyConfigured;
-        return false;
+        return isLocallyConfigured;
     }
 
     @Override
@@ -118,21 +124,31 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
         public boolean isApplicable(AbstractProject<?, ?> item) {
             return true;
         }
+    }
 
-        /*
-         * @Override public JobProperty<?> newInstance(StaplerRequest req,
-         * JSONObject formData) throws FormException {
-         * 
-         * final JSONObject newData = new JSONObject(); if
-         * (formData.containsKey("isLocallyConfigured")) {
-         * newData.put("isEnabled",
-         * formData.getJSONObject("isLocallyConfigured")
-         * .getString("isEnabled")); newData.put("maxDepth",
-         * formData.getJSONObject("isLocallyConfigured")
-         * .getString("maxDepth")); newData.put("isLocallyConfigured", "true");
-         * } else { newData.put("isEnabled", "false"); newData.put("maxDepth",
-         * ""); newData.put("isLocallyConfigured", "false"); } return
-         * super.newInstance(req, newData); }
+    /**
+     * The options that unfold after enabling the local configuration for
+     * periodic reincarnation in the job config page.
+     * 
+     * @author yboev
+     * 
+     */
+    public static class LocalValues {
+        /**
+         * Tells if restart is enabled for this project.
          */
+        private boolean isEnabled;
+        /**
+         * Max restart depth.
+         */
+        private int maxDepth;
+
+        @DataBoundConstructor
+        public LocalValues(boolean isEnabled, int maxDepth) {
+            LOGGER.info("CONSTRUCTOR2 called...");
+            this.isEnabled = isEnabled;
+            this.maxDepth = maxDepth;
+            LOGGER.info("values2: [" + isEnabled + "][" + maxDepth + "]");
+        }
     }
 }

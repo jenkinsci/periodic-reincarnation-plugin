@@ -60,7 +60,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * This method is called every minute.
+     * This method is called every minute. It contains the workflow of every
+     * restart. If you want to understand what the plugin does, start from here.
      * 
      * @param taskListener
      *            TaskListener
@@ -95,12 +96,14 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         // record current time
         final long currentTime = System.currentTimeMillis();
 
+        // Add projects to be restarted.
         addProjectsFoundByRegExHit(currentTime);
-
         if (cron != null && config.isRestartUnchangedJobsEnabled()) {
             addUnchangedProjects(cron, currentTime);
         }
-        if (scheduledProjects.size() > 0) {
+        
+        // Do the actual restart.
+        if (this.countProjectsForRestart() > 0) {
             restartCronProjects();
         }
     }
@@ -233,6 +236,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      *            current time, recorded previously.
      */
     private void addProjectsFoundByRegExHit(final long currentTime) {
+        if (PeriodicReincarnationGlobalConfiguration.get().getRegExprs() == null) {
+            return;
+        }
         for (RegEx regEx : PeriodicReincarnationGlobalConfiguration.get()
                 .getRegExprs()) {
             if (regEx.isTimeToRestart(currentTime)) {

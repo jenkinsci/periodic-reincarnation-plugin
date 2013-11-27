@@ -164,10 +164,10 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         while (build != null
                 && build.getCause(PeriodicReincarnationBuildCause.class) != null) {
             if (build.getCause(PeriodicReincarnationBuildCause.class)
-                    .getShortDescription().contains("Afterbuild")) {
+                    .getShortDescription().contains(Constants.AFTERBUILDRESTART)) {
                 count++;
             }
-            if (count > this.maxRestartDepth) {
+            if (count >= this.maxRestartDepth) {
                 return false;
             }
             build = build.getPreviousBuild();
