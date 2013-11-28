@@ -17,8 +17,8 @@ import hudson.model.Job;
  */
 public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
 
-    private static final Logger LOGGER = Logger
-            .getLogger(JobLocalConfiguration.class.getName());
+    // private static final Logger LOGGER = Logger
+    // .getLogger(JobLocalConfiguration.class.getName());
 
     /**
      * Tells if this project is locally configured(true means we override global
@@ -34,21 +34,15 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
     /**
      * Contructor for data binding of form data.
      * 
-     * @param isEnabled
-     *            true if activated.
-     * @param maxDepth
-     *            max restart depth
-     * @param isLocallyConfigured
-     *            tells if local config is enabled.
+     * @param optionalBlock
+     *            instance of LocalValues.
      */
     @DataBoundConstructor
     public JobLocalConfiguration(LocalValues optionalBlock) {
-        LOGGER.info("CONSTRUCTOR called...");
         if (optionalBlock != null) {
             this.isLocallyConfigured = true;
             this.localValues = optionalBlock;
         } else {
-            LOGGER.info("FALSE...");
             this.isLocallyConfigured = false;
         }
     }
@@ -59,6 +53,9 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * @return isEnabled value.
      */
     public boolean getIsEnabled() {
+        if (this.localValues == null) {
+            return false;
+        }
         return this.localValues.isEnabled;
     }
 
@@ -68,6 +65,9 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * @return maxDepth value.
      */
     public int getMaxDepth() {
+        if (this.localValues == null) {
+            return 0;
+        }
         return this.localValues.maxDepth;
     }
 
@@ -143,12 +143,18 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
          */
         private int maxDepth;
 
+        /**
+         * Constructor.
+         * 
+         * @param isEnabled
+         *            is afterbuild restart enabled.
+         * @param maxDepth
+         *            what is the maximal restart depth for this particular job.
+         */
         @DataBoundConstructor
         public LocalValues(boolean isEnabled, int maxDepth) {
-            LOGGER.info("CONSTRUCTOR2 called...");
             this.isEnabled = isEnabled;
             this.maxDepth = maxDepth;
-            LOGGER.info("values2: [" + isEnabled + "][" + maxDepth + "]");
         }
     }
 }

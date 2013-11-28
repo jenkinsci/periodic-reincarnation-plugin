@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.jenkins-ci.plugins</groupId>
 		<artifactId>plugin</artifactId>
-		<version> 1.541</version> <!-- which version of Jenkins is this plugin built against? -->
+		<version> 1.509.4</version> <!-- which version of Jenkins is this plugin built against? -->
 	</parent>
 	<name>Periodic Reincarnation Plugin</name>
 	<groupId>org.jenkins-ci.plugins</groupId>
@@ -72,6 +72,12 @@
 	
 	<dependencies>
 		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>jobConfigHistory</artifactId>
+			<version>2.5</version>	
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<groupId>org.jenkins-ci</groupId>
 			<artifactId>htmlunit</artifactId>
 			<version>2.6-jenkins-6</version>
@@ -82,11 +88,6 @@
             <version>4.11</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-			<groupId>org.jenkins-ci</groupId>
-			<artifactId>htmlunit</artifactId>
-			<version>2.6-jenkins-6</version>
-		</dependency>
 	</dependencies>
 	
 	<build>

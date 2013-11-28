@@ -101,7 +101,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         if (cron != null && config.isRestartUnchangedJobsEnabled()) {
             addUnchangedProjects(cron, currentTime);
         }
-        
+
         // Do the actual restart.
         if (this.countProjectsForRestart() > 0) {
             restartCronProjects();
@@ -210,7 +210,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Returns the restart cause for a RegEx.
+     * Returns the restart cause for a RegEx. The cause is built from the
+     * description if there is one, if not then the value of the regex itself
+     * becomes the cause.
      * 
      * @param regEx
      *            the RegEx.

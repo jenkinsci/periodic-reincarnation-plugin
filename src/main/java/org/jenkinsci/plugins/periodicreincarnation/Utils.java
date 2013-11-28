@@ -1,5 +1,19 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
+import hudson.AbortException;
+import hudson.model.BuildBadgeAction;
+import hudson.model.Result;
+import hudson.model.AbstractBuild;
+import hudson.model.Computer;
+import hudson.model.Node;
+import hudson.model.Project;
+import hudson.model.Run;
+import hudson.plugins.jobConfigHistory.JobConfigBadgeAction;
+import hudson.plugins.jobConfigHistory.JobConfigHistory;
+import hudson.remoting.VirtualChannel;
+import hudson.util.IOUtils;
+import hudson.util.RemotingDiagnostics;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -11,19 +25,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jenkins.model.Jenkins;
-
-import org.jenkinsci.plugins.periodicreincarnation.RegEx;
-
-import hudson.AbortException;
-import hudson.model.AbstractBuild;
-import hudson.model.Computer;
-import hudson.model.Node;
-import hudson.model.Project;
-import hudson.model.Result;
-import hudson.model.Run;
-import hudson.remoting.VirtualChannel;
-import hudson.util.IOUtils;
-import hudson.util.RemotingDiagnostics;
 
 /**
  * Utility class.
@@ -58,12 +59,14 @@ public class Utils {
             return false;
         }
         final Run<?, ?> secondLastBuild = lastBuild.getPreviousBuild();
+        final boolean configChange = isThereConfigChange(lastBuild);
+        LOGGER.info("configChange is....." + configChange);
         if (lastBuild.getResult() != null
                 && lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
                 && secondLastBuild != null
                 && secondLastBuild.getResult() != null
                 && secondLastBuild.getResult().isBetterThan(Result.FAILURE)
-                && !areThereSCMChanges(lastBuild)) {
+                && !areThereSCMChanges(lastBuild) && !configChange) {
             // last build failed, but second one didn't and there were no
             // changes between the two builds
             // in this case we restart the build
@@ -72,6 +75,33 @@ public class Utils {
         // last build was not a failure or 2nd last was.
         // no restart
         return false;
+    }
+
+    /**
+     * Returns true if this build has a BadgeAction from Job Config History
+     * plugin. This is a way of checking if there was a change in the
+     * configuration before the build.
+     * 
+     * @param lastBuild
+     *            the last build being checked.
+     * @return false means no icon or no jobConfigHistory, returns true
+     *         otherwise.
+     */
+    private static boolean isThereConfigChange(Run<?, ?> lastBuild) {
+        // use the String method here, because we check if optional dependency
+        // JobConfigHistory is listed.
+        try {
+            if (Jenkins.getInstance().getPlugin("jobConfigHistory") != null) {
+                for (BuildBadgeAction ba : lastBuild.getBadgeActions()) {
+                    if (ba instanceof JobConfigBadgeAction) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (java.lang.NoClassDefFoundError e) {
+            return false;
+        }
     }
 
     /**
