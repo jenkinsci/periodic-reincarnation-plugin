@@ -1,10 +1,13 @@
 package org.jenkinsci.plugins.periodicreincarnationtest;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import jenkins.model.Jenkins;
+
 import antlr.ANTLRException;
-import hudson.model.Hudson;
 import hudson.model.Job;
 import hudson.model.Result;
 
@@ -14,6 +17,7 @@ import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalCo
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
 
@@ -146,10 +150,20 @@ public class TestConfiguration extends HudsonTestCase {
                 .getFirstByXPath("//input[@name='" + "regExprs.value" + "']");
         assertNotNull("regEx1 is null!", regEx1);
         regEx1.setValueAttribute("test");
+
+        final HtmlTextInput nodeAction = (HtmlTextInput) regExprs
+                .getFirstByXPath("//input[@name='" + "regExprs.nodeAction" + "']");
+        assertNotNull("nodeAction is null!", nodeAction);
+        nodeAction.setValueAttribute("echo 123");
+        
+        final HtmlTextInput masterAction = (HtmlTextInput) regExprs
+                .getFirstByXPath("//input[@name='" + "regExprs.masterAction" + "']");
+        assertNotNull("masterAction is null!", masterAction);
+        masterAction.setValueAttribute("echo 123");
     }
 
     private void checkLoadedJobs() {
-        final Job<?, ?> job1 = (Job<?, ?>) Hudson.getInstance().getItem(
+        final Job<?, ?> job1 = (Job<?, ?>) Jenkins.getInstance().getItem(
                 "test_job");
         assertNotNull("job missing.. @LocalData problem?", job1);
 
@@ -157,7 +171,7 @@ public class TestConfiguration extends HudsonTestCase {
         System.out.println("JOB1 LOG:"
                 + job1.getLastBuild().getLogFile().toString());
 
-        final Job<?, ?> job2 = (Job<?, ?>) Hudson.getInstance().getItem(
+        final Job<?, ?> job2 = (Job<?, ?>) Jenkins.getInstance().getItem(
                 "no_change");
         assertNotNull("job missing.. @LocalData problem?", job2);
         assertEquals(Result.FAILURE, job2.getLastBuild().getResult());
