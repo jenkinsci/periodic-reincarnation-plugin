@@ -85,7 +85,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         if (build.getProject() instanceof Project<?, ?>
                 && checkRestartDepth(build)) {
             Utils.restart((Project<?, ?>) build.getProject(),
-                    "(Afterbuild restart) Locally configured project.", null);
+                    "(Afterbuild restart) Locally configured project.", null,
+                    Constants.AFTERBUILDQUIETPERIOD);
         }
     }
 
@@ -106,7 +107,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
             Utils.restart(
                     (Project<?, ?>) build.getProject(),
                     "(Afterbuild restart) No difference between last two builds",
-                    null);
+                    null, Constants.AFTERBUILDQUIETPERIOD);
         }
     }
 
@@ -122,7 +123,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
                 && build.getProject() instanceof Project<?, ?>) {
             Utils.restart((Project<?, ?>) build.getProject(),
                     "(Afterbuild restart) RegEx hit in console output: "
-                            + regEx.getValue(), regEx);
+                            + regEx.getValue(), regEx,
+                    Constants.AFTERBUILDQUIETPERIOD);
         }
     }
 
@@ -164,7 +166,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         while (build != null
                 && build.getCause(PeriodicReincarnationBuildCause.class) != null) {
             if (build.getCause(PeriodicReincarnationBuildCause.class)
-                    .getShortDescription().contains(Constants.AFTERBUILDRESTART)) {
+                    .getShortDescription()
+                    .contains(Constants.AFTERBUILDRESTART)) {
                 count++;
             }
             if (count >= this.maxRestartDepth) {

@@ -166,7 +166,8 @@ public class PeriodicReincarnationGlobalConfiguration extends
 
     /**
      * Checks if a cron tab for a regEx can be compiled.
-     * 
+     * @param value
+     *            the value of the cron time to be checked.
      * @return true if the cron tab can be compiled, false otherwise.
      * @throws ANTLRException
      * @throws NullPointerException
@@ -174,7 +175,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
 
     public FormValidation doCheckRegExCronTime(@QueryParameter String value)
             throws NullPointerException, ANTLRException {
-        if (value.equals("")) {
+        if ("".equals(value)) {
             return FormValidation
                     .warning("Global cron time will be used for this regular expression.");
         }

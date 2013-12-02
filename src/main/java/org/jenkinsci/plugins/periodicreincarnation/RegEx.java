@@ -160,7 +160,7 @@ public class RegEx {
                                 .getCronTime());
             }
         } catch (ANTLRException e) {
-            LOGGER.warning("Global cron tab could not be parsed!");
+            LOGGER.fine("Global cron tab could not be parsed!");
         }
         // if the regExCronTab is available use it, if not go with the
         // global cron time.

@@ -179,7 +179,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         final StringBuilder sb = new StringBuilder();
         for (Project<?, ?> proj : this.unchangedRestartProjects) {
             Utils.restart(proj, "(Cron restart) "
-                    + Constants.NODIFFERENCERESTART, null);
+                    + Constants.NODIFFERENCERESTART, null, Constants.NORMALQUIETPERIOD);
             sb.append("\t" + proj.getDisplayName() + "\n");
         }
         summary += sb.toString();
@@ -200,7 +200,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                     + " projects scheduled for restart" + "\n");
             final StringBuilder sb = new StringBuilder();
             for (Project<?, ?> proj : this.regExRestartList.get(regEx)) {
-                Utils.restart(proj, getRestartCause(regEx), regEx);
+                Utils.restart(proj, getRestartCause(regEx), regEx, Constants.NORMALQUIETPERIOD);
                 sb.append("\t" + proj.getDisplayName() + "\n");
             }
 

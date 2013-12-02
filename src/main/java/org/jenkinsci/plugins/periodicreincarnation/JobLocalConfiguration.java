@@ -1,7 +1,5 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
-import java.util.logging.Logger;
-
 import org.kohsuke.stapler.DataBoundConstructor;
 import hudson.Extension;
 import hudson.model.JobProperty;

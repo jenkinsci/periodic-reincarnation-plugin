@@ -9,7 +9,6 @@ import hudson.model.Node;
 import hudson.model.Project;
 import hudson.model.Run;
 import hudson.plugins.jobConfigHistory.JobConfigBadgeAction;
-import hudson.plugins.jobConfigHistory.JobConfigHistory;
 import hudson.remoting.VirtualChannel;
 import hudson.util.IOUtils;
 import hudson.util.RemotingDiagnostics;
@@ -118,7 +117,7 @@ public class Utils {
      * 
      */
     protected static void restart(Project<?, ?> project, String cause,
-            RegEx regEx) {
+            RegEx regEx, int quietPeriod) {
         if (regEx != null) {
             try {
                 Utils.execAction(project, regEx.getNodeAction(),
@@ -131,7 +130,7 @@ public class Utils {
                 e.printStackTrace();
             }
         }
-        project.scheduleBuild(new PeriodicReincarnationBuildCause(cause));
+        project.scheduleBuild(quietPeriod, new PeriodicReincarnationBuildCause(cause));
     }
 
     /**
