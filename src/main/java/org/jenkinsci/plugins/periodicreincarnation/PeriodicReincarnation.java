@@ -4,7 +4,6 @@ import java.util.logging.Logger;
 
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.Result;
-import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.TaskListener;
 import hudson.scheduler.CronTab;
@@ -15,6 +14,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.HashMap;
+
+import jenkins.model.Jenkins;
 
 /**
  * Main class of the periodic reincarnation plug-in. Method execute is called
@@ -244,7 +245,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         for (RegEx regEx : PeriodicReincarnationGlobalConfiguration.get()
                 .getRegExprs()) {
             if (regEx.isTimeToRestart(currentTime)) {
-                for (Project<?, ?> project : Hudson.getInstance().getProjects()) {
+                for (Project<?, ?> project : Jenkins.getInstance().getProjects()) {
                     if (isValidCandidateForRestart(project)
                             && !scheduledProjects.contains(project
                                     .getFullDisplayName())
@@ -278,7 +279,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         try {
             cronTab = new CronTab(cron);
             if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
-                for (Project<?, ?> project : Hudson.getInstance().getProjects()) {
+                for (Project<?, ?> project : Jenkins.getInstance().getProjects()) {
                     if (isValidCandidateForRestart(project)
                             && Utils.qualifyForUnchangedRestart(project)
                             && !scheduledProjects.contains(project

@@ -111,7 +111,9 @@ public class Utils {
      * @param cause
      *            the cause for the restart.
      * @param regEx
-     *            regual expression
+     *            regual expression.
+     * @param quietPeriod
+     *            amount of time a job will wait in the queue(in seconds).
      * @throws IOException
      * @throws InterruptedException
      * 
@@ -130,7 +132,8 @@ public class Utils {
                 e.printStackTrace();
             }
         }
-        project.scheduleBuild(quietPeriod, new PeriodicReincarnationBuildCause(cause));
+        project.scheduleBuild(quietPeriod, new PeriodicReincarnationBuildCause(
+                cause));
     }
 
     /**

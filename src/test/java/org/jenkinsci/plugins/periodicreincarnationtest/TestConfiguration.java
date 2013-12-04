@@ -1,7 +1,5 @@
 package org.jenkinsci.plugins.periodicreincarnationtest;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +15,6 @@ import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalCo
 import org.junit.Assert;
 import org.junit.Test;
 import org.jvnet.hudson.test.HudsonTestCase;
-import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
 
@@ -152,12 +149,14 @@ public class TestConfiguration extends HudsonTestCase {
         regEx1.setValueAttribute("test");
 
         final HtmlTextInput nodeAction = (HtmlTextInput) regExprs
-                .getFirstByXPath("//input[@name='" + "regExprs.nodeAction" + "']");
+                .getFirstByXPath("//input[@name='" + "regExprs.nodeAction"
+                        + "']");
         assertNotNull("nodeAction is null!", nodeAction);
         nodeAction.setValueAttribute("echo 123");
-        
+
         final HtmlTextInput masterAction = (HtmlTextInput) regExprs
-                .getFirstByXPath("//input[@name='" + "regExprs.masterAction" + "']");
+                .getFirstByXPath("//input[@name='" + "regExprs.masterAction"
+                        + "']");
         assertNotNull("masterAction is null!", masterAction);
         masterAction.setValueAttribute("echo 123");
     }

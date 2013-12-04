@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -10,6 +9,7 @@ import hudson.Extension;
 import hudson.util.FormValidation;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
@@ -153,7 +153,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
      */
 
     public FormValidation doCheckRegExValue(@QueryParameter String value) {
-        if (value.equals("")) {
+        if (StringUtils.isEmpty(value)) {
             return FormValidation.warning("RegEx is empty.");
         }
         try {
