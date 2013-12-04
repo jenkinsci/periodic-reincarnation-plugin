@@ -58,14 +58,12 @@ public class Utils {
             return false;
         }
         final Run<?, ?> secondLastBuild = lastBuild.getPreviousBuild();
-        final boolean configChange = isThereConfigChange(lastBuild);
-        LOGGER.info("configChange is....." + configChange);
         if (lastBuild.getResult() != null
                 && lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
                 && secondLastBuild != null
                 && secondLastBuild.getResult() != null
                 && secondLastBuild.getResult().isBetterThan(Result.FAILURE)
-                && !areThereSCMChanges(lastBuild) && !configChange) {
+                && !areThereSCMChanges(lastBuild) && !isThereConfigChange(lastBuild)) {
             // last build failed, but second one didn't and there were no
             // changes between the two builds
             // in this case we restart the build
