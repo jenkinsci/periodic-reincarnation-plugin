@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.periodicreincarnationtest;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
@@ -13,8 +15,9 @@ import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnation;
 import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationBuildCause;
 import org.jenkinsci.plugins.periodicreincarnation.PeriodicReincarnationGlobalConfiguration;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.HudsonTestCase;
+import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 import org.xml.sax.SAXException;
 
@@ -31,8 +34,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
  * @author yboev
  * 
  */
-public class TestConfiguration extends HudsonTestCase {
-
+public class TestConfiguration {
+    @Rule
+    public JenkinsRule jenkinsRule = new JenkinsRule();
     /**
      * The global configuration.
      */
@@ -63,7 +67,7 @@ public class TestConfiguration extends HudsonTestCase {
         setConfigurationProperties();
 
         // submit all populated values
-        submit(this.form);
+        jenkinsRule.submit(this.form);
 
         try {
             TimeUnit.SECONDS.sleep(50);
@@ -116,6 +120,11 @@ public class TestConfiguration extends HudsonTestCase {
         assertTrue(config.isRestartUnchangedJobsEnabled());
     }
 
+    /**
+     * Sets the fields in the config(global config).
+     * 
+     * @throws IOException
+     */
     private void setConfigurationProperties() throws IOException {
         final HtmlTextInput cronTime = form.getInputByName("_.cronTime");
         assertNotNull("Cron Time is null!", cronTime);
@@ -161,6 +170,9 @@ public class TestConfiguration extends HudsonTestCase {
         masterAction.setValueAttribute("echo 123");
     }
 
+    /**
+     * checks if jobs are loaded by @LocalData.
+     */
     private void checkLoadedJobs() {
         final Job<?, ?> job1 = (Job<?, ?>) Jenkins.getInstance().getItem(
                 "test_job");
@@ -187,7 +199,7 @@ public class TestConfiguration extends HudsonTestCase {
      *             SAX error
      */
     private void getGlobalForm() throws IOException, SAXException {
-        final HtmlPage page = new WebClient().goTo("configure");
+        final HtmlPage page = jenkinsRule.createWebClient().goTo("configure");
         final String allElements = page.asText();
 
         assertTrue(allElements.contains("Cron Time"));
