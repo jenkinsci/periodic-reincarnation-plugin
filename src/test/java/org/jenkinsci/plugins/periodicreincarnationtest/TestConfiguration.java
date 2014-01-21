@@ -121,7 +121,7 @@ public class TestConfiguration {
     }
 
     /**
-     * Sets the fields in the config(global config).
+     * Sets the fields in the config with test values(global config).
      * 
      * @throws IOException
      */

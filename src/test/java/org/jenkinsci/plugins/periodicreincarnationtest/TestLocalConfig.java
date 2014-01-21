@@ -15,7 +15,6 @@
 //import org.jvnet.hudson.test.recipes.LocalData;
 //import org.xml.sax.SAXException;
 //
-//import com.gargoylesoftware.htmlunit.html.HtmlElement;
 //import com.gargoylesoftware.htmlunit.html.HtmlPage;
 //
 //public class TestLocalConfig {
@@ -35,6 +34,8 @@
 //        /*
 //         * No idea why this is not working...
 //         * https://groups.google.com/forum/#!topic/jenkinsci-dev/CKzCck-XrQI
+//         * 
+//         * Maybe... https://issues.jenkins-ci.org/browse/JENKINS-14514
 //         * 
 //         */
 //        final HtmlPage page = jenkinsRule.createWebClient().goTo("job/afterbuild_test/configure");
