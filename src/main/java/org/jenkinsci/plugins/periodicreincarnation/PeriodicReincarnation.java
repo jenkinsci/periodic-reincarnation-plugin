@@ -4,8 +4,8 @@ import java.util.logging.Logger;
 
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.Result;
-import hudson.model.Project;
 import hudson.model.TaskListener;
+import hudson.model.AbstractProject;
 import hudson.scheduler.CronTab;
 
 import antlr.ANTLRException;
@@ -38,7 +38,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     /**
      * For every RegEx holds the projects being restarted because of it.
      */
-    private HashMap<RegEx, ArrayList<Project<?, ?>>> regExRestartList;
+    private HashMap<RegEx, ArrayList<AbstractProject<?, ?>>> regExRestartList;
 
     /**
      * Set with all projects scheduled for restart. Used to determine if a
@@ -51,7 +51,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * between the last builds and the last failed, but the second last was a
      * success.
      */
-    private ArrayList<Project<?, ?>> unchangedRestartProjects;
+    private ArrayList<AbstractProject<?, ?>> unchangedRestartProjects;
 
     /**
      * Constructor.
@@ -90,9 +90,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         // Initialize the data structures where the to-be-restarted projects are
         // held temporarily.
         // Needed for sorting them by the reason for the restart.
-        this.regExRestartList = new HashMap<RegEx, ArrayList<Project<?, ?>>>();
+        this.regExRestartList = new HashMap<RegEx, ArrayList<AbstractProject<?, ?>>>();
         this.scheduledProjects = new HashSet<String>();
-        this.unchangedRestartProjects = new ArrayList<Project<?, ?>>();
+        this.unchangedRestartProjects = new ArrayList<AbstractProject<?, ?>>();
 
         // record current time
         final long currentTime = System.currentTimeMillis();
@@ -178,7 +178,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                 + this.unchangedRestartProjects.size()
                 + " projects scheduled for restart" + "\n";
         final StringBuilder sb = new StringBuilder();
-        for (Project<?, ?> proj : this.unchangedRestartProjects) {
+        for (AbstractProject<?, ?> proj : this.unchangedRestartProjects) {
             Utils.restart(proj, "(Cron restart) "
                     + Constants.NODIFFERENCERESTART, null, Constants.NORMALQUIETPERIOD);
             sb.append("\t" + proj.getDisplayName() + "\n");
@@ -200,7 +200,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                     + this.regExRestartList.get(regEx).size()
                     + " projects scheduled for restart" + "\n");
             final StringBuilder sb = new StringBuilder();
-            for (Project<?, ?> proj : this.regExRestartList.get(regEx)) {
+            for (AbstractProject<?, ?> proj : this.regExRestartList.get(regEx)) {
                 Utils.restart(proj, getRestartCause(regEx), regEx, Constants.NORMALQUIETPERIOD);
                 sb.append("\t" + proj.getDisplayName() + "\n");
             }
@@ -245,7 +245,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         for (RegEx regEx : PeriodicReincarnationGlobalConfiguration.get()
                 .getRegExprs()) {
             if (regEx.isTimeToRestart(currentTime)) {
-                for (Project<?, ?> project : Jenkins.getInstance().getProjects()) {
+                for (AbstractProject<?, ?> project : Jenkins.getInstance().getProjects()) {
                     if (isValidCandidateForRestart(project)
                             && !scheduledProjects.contains(project
                                     .getFullDisplayName())
@@ -255,7 +255,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                         if (this.regExRestartList.containsKey(regEx)) {
                             this.regExRestartList.get(regEx).add(project);
                         } else {
-                            final ArrayList<Project<?, ?>> newList = new ArrayList<Project<?, ?>>();
+                            final ArrayList<AbstractProject<?, ?>> newList = new ArrayList<AbstractProject<?, ?>>();
                             newList.add(project);
                             this.regExRestartList.put(regEx, newList);
                         }
@@ -279,7 +279,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         try {
             cronTab = new CronTab(cron);
             if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
-                for (Project<?, ?> project : Jenkins.getInstance().getProjects()) {
+                for (AbstractProject<?, ?> project : Jenkins.getInstance().getProjects()) {
                     if (isValidCandidateForRestart(project)
                             && Utils.qualifyForUnchangedRestart(project)
                             && !scheduledProjects.contains(project
@@ -304,7 +304,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      *            the current project
      * @return true should be tested, false otherwise
      */
-    private boolean isValidCandidateForRestart(final Project<?, ?> project) {
+    private boolean isValidCandidateForRestart(final AbstractProject<?, ?> project) {
         return project != null
                 && !project.isDisabled()
                 && project.isBuildable()

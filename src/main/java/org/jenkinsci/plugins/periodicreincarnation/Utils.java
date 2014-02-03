@@ -4,9 +4,9 @@ import hudson.AbortException;
 import hudson.model.BuildBadgeAction;
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.Computer;
 import hudson.model.Node;
-import hudson.model.Project;
 import hudson.model.Run;
 import hudson.plugins.jobConfigHistory.JobConfigBadgeAction;
 import hudson.remoting.VirtualChannel;
@@ -26,7 +26,8 @@ import java.util.regex.Pattern;
 import jenkins.model.Jenkins;
 
 /**
- * Utility class.
+ * Utility class. Functions for determining if there should be a restart and
+ * functions actually performing the restart.
  * 
  * @author yboev
  * 
@@ -36,8 +37,7 @@ public class Utils {
     /**
      * Logger for PeriodicReincarnation.
      */
-    private static final Logger LOGGER = Logger
-            .getLogger(Utils.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
 
     /**
      * If there were no changes between the last 2 builds of a project and the
@@ -48,7 +48,7 @@ public class Utils {
      *            the project.
      * @return true if it qualifies, false otherwise.
      */
-    protected static boolean qualifyForUnchangedRestart(Project<?, ?> project) {
+    protected static boolean qualifyForUnchangedRestart(AbstractProject<?, ?> project) {
         // proves if a build WAS stable and if there are changes between the
         // last two builds.
         // WAS stable means: last build was worse or equal to FAILURE, second
@@ -58,12 +58,10 @@ public class Utils {
             return false;
         }
         final Run<?, ?> secondLastBuild = lastBuild.getPreviousBuild();
-        if (lastBuild.getResult() != null
-                && lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
-                && secondLastBuild != null
-                && secondLastBuild.getResult() != null
-                && secondLastBuild.getResult().isBetterThan(Result.FAILURE)
-                && !areThereSCMChanges(lastBuild) && !isThereConfigChange(lastBuild)) {
+        if (lastBuild.getResult() != null && lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
+                && secondLastBuild != null && secondLastBuild.getResult() != null
+                && secondLastBuild.getResult().isBetterThan(Result.FAILURE) && !areThereSCMChanges(lastBuild)
+                && !isThereConfigChange(lastBuild)) {
             // last build failed, but second one didn't and there were no
             // changes between the two builds
             // in this case we restart the build
@@ -116,12 +114,10 @@ public class Utils {
      * @throws InterruptedException
      * 
      */
-    protected static void restart(Project<?, ?> project, String cause,
-            RegEx regEx, int quietPeriod) {
+    protected static void restart(AbstractProject<?, ?> project, String cause, RegEx regEx, int quietPeriod) {
         if (regEx != null) {
             try {
-                Utils.execAction(project, regEx.getNodeAction(),
-                        regEx.getMasterAction());
+                Utils.execAction(project, regEx.getNodeAction(), regEx.getMasterAction());
             } catch (IOException e) {
                 LOGGER.warning("I/O Problem executing groovy script.");
                 e.printStackTrace();
@@ -130,8 +126,7 @@ public class Utils {
                 e.printStackTrace();
             }
         }
-        project.scheduleBuild(quietPeriod, new PeriodicReincarnationBuildCause(
-                cause));
+        project.scheduleBuild(quietPeriod, new PeriodicReincarnationBuildCause(cause));
     }
 
     /**
@@ -150,8 +145,7 @@ public class Utils {
         for (final Iterator<RegEx> i = regExprs.iterator(); i.hasNext();) {
             final RegEx currentRegEx = i.next();
             try {
-                if (checkFile(build.getLogFile(), currentRegEx.getPattern(),
-                        true)) {
+                if (checkFile(build.getLogFile(), currentRegEx.getPattern(), true)) {
                     return currentRegEx;
                 }
             } catch (AbortException e) {
@@ -173,8 +167,7 @@ public class Utils {
     protected static boolean checkBuild(Run<?, ?> build, RegEx regEx) {
         try {
             if (build.getLogFile() == null) {
-                LOGGER.warning("Log file cound not be retrieved for project: "
-                        + build.getParent().getDisplayName());
+                LOGGER.warning("Log file cound not be retrieved for project: " + build.getParent().getDisplayName());
                 return false;
             }
             return checkFile(build.getLogFile(), regEx.getPattern(), true);
@@ -197,8 +190,7 @@ public class Utils {
      * 
      * @return True if reg ex was found in the file, false otherwise.
      */
-    private static boolean checkFile(File file, Pattern pattern,
-            boolean abortAfterFirstHit) {
+    private static boolean checkFile(File file, Pattern pattern, boolean abortAfterFirstHit) {
         if (pattern == null) {
             return false;
         }
@@ -254,8 +246,8 @@ public class Utils {
      * @throws InterruptedException
      *             interrupt exception
      */
-    protected static void execAction(Project<?, ?> project, String nodeAction,
-            String masterAction) throws IOException, InterruptedException {
+    protected static void execAction(AbstractProject<?, ?> project, String nodeAction, String masterAction) throws IOException,
+            InterruptedException {
         final Node node = project.getLastBuild().getBuiltOn();
         final Computer slave = node.toComputer();
 
@@ -277,16 +269,13 @@ public class Utils {
      * @param channel
      *            virtual channel of the node.
      */
-    private static void executeGroovyScript(String script,
-            VirtualChannel channel) {
+    private static void executeGroovyScript(String script, VirtualChannel channel) {
         try {
             RemotingDiagnostics.executeGroovy(script, channel);
         } catch (IOException e) {
-            LOGGER.warning("I/O Problem while executing the following script: "
-                    + script);
+            LOGGER.warning("I/O Problem while executing the following script: " + script);
         } catch (InterruptedException e) {
-            LOGGER.warning("Interrupted while executing the following script: "
-                    + script);
+            LOGGER.warning("Interrupted while executing the following script: " + script);
         }
     }
 
