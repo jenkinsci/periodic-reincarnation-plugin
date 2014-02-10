@@ -246,11 +246,16 @@ public class Utils {
      * @throws InterruptedException
      *             interrupt exception
      */
-    protected static void execAction(AbstractProject<?, ?> project, String nodeAction, String masterAction) throws IOException,
-            InterruptedException {
-        final Node node = project.getLastBuild().getBuiltOn();
-        final Computer slave = node.toComputer();
-
+    protected static void execAction(AbstractProject<?, ?> project, String nodeAction, String masterAction)
+            throws IOException, InterruptedException {
+        final Node node;
+        final Computer slave;
+        try {
+            node = project.getLastBuild().getBuiltOn();
+            slave = node.toComputer();
+        } catch (NullPointerException e) {
+            return;
+        }
         if (nodeAction != null && nodeAction.length() > 1) {
             LOGGER.fine("Executing node script");
             executeGroovyScript(nodeAction, slave.getChannel());

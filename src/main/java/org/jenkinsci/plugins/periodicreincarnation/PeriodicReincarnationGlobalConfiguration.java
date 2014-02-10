@@ -207,7 +207,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * @return true if the option is enabled, false otherwise.
      */
     public boolean isRestartUnchangedJobsEnabled() {
-        return (this.noChange != null && this.noChange.equals("true"));
+        return this.noChange != null && this.noChange.equals("true");
     }
 
     /**
@@ -243,7 +243,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * @return true if activated, false otherwise.
      */
     public boolean isCronActive() {
-        return (this.activeCron != null && this.activeCron.equals("true"));
+        return this.activeCron != null && this.activeCron.equals("true");
     }
 
     /**
@@ -261,7 +261,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * @return true if activated, false otherwise.
      */
     public boolean isTriggerActive() {
-        return (this.activeTrigger != null && this.activeTrigger.equals("true"));
+        return this.activeTrigger != null && this.activeTrigger.equals("true");
     }
 
     /**

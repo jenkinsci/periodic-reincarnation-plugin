@@ -1,7 +1,5 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
-import java.util.logging.Logger;
-
 import hudson.Extension;
 import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
@@ -24,7 +22,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * 
      */
     private int maxRestartDepth;
-    
+
     /**
      * Tells if this type of restart is enabled(either globally or locally).
      */
@@ -38,8 +36,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
     public void onCompleted(AbstractBuild<?, ?> build, TaskListener listener) {
 
         // stop if no build or project can be retrieved
-        if (build == null || build.getProject() == null
-                || !(build.getProject() instanceof AbstractProject<?, ?>)) {
+        if (build == null || build.getProject() == null) {
+            // || !(build.getProject() instanceof AbstractProject<?, ?>)) {
             return;
         }
 
@@ -48,16 +46,14 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
             return;
         }
 
-        final JobLocalConfiguration localConfig = build.getProject()
-                .getProperty(JobLocalConfiguration.class);
-        final PeriodicReincarnationGlobalConfiguration globalConfig = PeriodicReincarnationGlobalConfiguration
-                .get();
+        final JobLocalConfiguration localConfig = build.getProject().getProperty(JobLocalConfiguration.class);
+        final PeriodicReincarnationGlobalConfiguration globalConfig = PeriodicReincarnationGlobalConfiguration.get();
         // stop if there is no global configuration
         if (globalConfig == null) {
             return;
         }
         setConfigVariables(localConfig, globalConfig);
-        
+
         // stop if not enabled
         if (!this.isEnabled) {
             return;
@@ -84,11 +80,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      *            The current build.
      */
     private void localRestart(AbstractBuild<?, ?> build) {
-        if (build.getProject() instanceof AbstractProject<?, ?>
-                && checkRestartDepth(build)) {
+        if (checkRestartDepth(build)) {
             Utils.restart((AbstractProject<?, ?>) build.getProject(),
-                    "(Afterbuild restart) Locally configured project.", null,
-                    Constants.AFTERBUILDQUIETPERIOD);
+                    "(Afterbuild restart) Locally configured project.", null, Constants.AFTERBUILDQUIETPERIOD);
         }
     }
 
@@ -100,16 +94,12 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * @param config
      *            the periodic reincarnation configuration
      */
-    private void noChangeRestart(AbstractBuild<?, ?> build,
-            PeriodicReincarnationGlobalConfiguration config) {
-        if (build.getProject() instanceof AbstractProject<?, ?>
-                && config.isRestartUnchangedJobsEnabled()
-                && Utils.qualifyForUnchangedRestart((AbstractProject<?, ?>) build
-                        .getProject()) && checkRestartDepth(build)) {
-            Utils.restart(
-                    (AbstractProject<?, ?>) build.getProject(),
-                    "(Afterbuild restart) No difference between last two builds",
-                    null, Constants.AFTERBUILDQUIETPERIOD);
+    private void noChangeRestart(AbstractBuild<?, ?> build, PeriodicReincarnationGlobalConfiguration config) {
+        if (config.isRestartUnchangedJobsEnabled()
+                && Utils.qualifyForUnchangedRestart((AbstractProject<?, ?>) build.getProject())
+                && checkRestartDepth(build)) {
+            Utils.restart((AbstractProject<?, ?>) build.getProject(),
+                    "(Afterbuild restart) No difference between last two builds", null, Constants.AFTERBUILDQUIETPERIOD);
         }
     }
 
@@ -121,11 +111,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      */
     private void regExRestart(AbstractBuild<?, ?> build) {
         final RegEx regEx = Utils.checkBuild(build);
-        if (regEx != null && checkRestartDepth(build)
-                && build.getProject() instanceof AbstractProject<?, ?>) {
+        if (regEx != null && checkRestartDepth(build)) {
             Utils.restart((AbstractProject<?, ?>) build.getProject(),
-                    "(Afterbuild restart) RegEx hit in console output: "
-                            + regEx.getValue(), regEx,
+                    "(Afterbuild restart) RegEx hit in console output: " + regEx.getValue(), regEx,
                     Constants.AFTERBUILDQUIETPERIOD);
         }
     }
@@ -138,8 +126,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
      * @param config
      *            Global configuration.
      */
-    private void setConfigVariables(JobLocalConfiguration localconfig,
-            PeriodicReincarnationGlobalConfiguration config) {
+    private void setConfigVariables(JobLocalConfiguration localconfig, PeriodicReincarnationGlobalConfiguration config) {
         if (localconfig != null && localconfig.getIsLocallyConfigured()) {
             this.isEnabled = localconfig.getIsEnabled();
             this.isLocallyEnabled = localconfig.getIsEnabled();
@@ -165,10 +152,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         int count = 0;
 
         // count the number of restarts for the current project
-        while (build != null
-                && build.getCause(PeriodicReincarnationBuildCause.class) != null) {
-            if (build.getCause(PeriodicReincarnationBuildCause.class)
-                    .getShortDescription()
+        while (build != null && build.getCause(PeriodicReincarnationBuildCause.class) != null) {
+            if (build.getCause(PeriodicReincarnationBuildCause.class).getShortDescription()
                     .contains(Constants.AFTERBUILDRESTART)) {
                 count++;
             }

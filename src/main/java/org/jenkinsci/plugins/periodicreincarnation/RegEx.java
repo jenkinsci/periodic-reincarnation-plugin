@@ -17,13 +17,12 @@ import hudson.scheduler.CronTab;
  * 
  */
 public class RegEx {
-    
+
     /**
      * Logger for PeriodicReincarnation.
      */
-    private static final Logger LOGGER = Logger
-            .getLogger(RegEx.class.getName());
-    
+    private static final Logger LOGGER = Logger.getLogger(RegEx.class.getName());
+
     /**
      * Value of the reg ex as String.
      */
@@ -61,15 +60,13 @@ public class RegEx {
      *            master script
      */
     @DataBoundConstructor
-    public RegEx(String value, String description, String cronTime,
-            String nodeAction, String masterAction) {
+    public RegEx(String value, String description, String cronTime, String nodeAction, String masterAction) {
         this.value = value;
         this.description = description;
         this.cronTime = cronTime;
         this.nodeAction = nodeAction;
         this.masterAction = masterAction;
     }
-        
 
     /**
      * Returns this reg ex.
@@ -155,9 +152,7 @@ public class RegEx {
         }
         try {
             if (PeriodicReincarnationGlobalConfiguration.get().getCronTime() != null) {
-                globalExCronTab = new CronTab(
-                        PeriodicReincarnationGlobalConfiguration.get()
-                                .getCronTime());
+                globalExCronTab = new CronTab(PeriodicReincarnationGlobalConfiguration.get().getCronTime());
             }
         } catch (ANTLRException e) {
             LOGGER.fine("Global cron tab could not be parsed!");
@@ -165,12 +160,10 @@ public class RegEx {
         // if the regExCronTab is available use it, if not go with the
         // global cron time.
         if (regExCronTab != null) {
-            return (regExCronTab.ceil(currentTime).getTimeInMillis()
-                    - currentTime == 0);
+            return regExCronTab.ceil(currentTime).getTimeInMillis() - currentTime == 0;
         }
         if (globalExCronTab != null) {
-            return (globalExCronTab.ceil(currentTime).getTimeInMillis()
-                    - currentTime == 0);
+            return globalExCronTab.ceil(currentTime).getTimeInMillis() - currentTime == 0;
         }
         return false;
 
