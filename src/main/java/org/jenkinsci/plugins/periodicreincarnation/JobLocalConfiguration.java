@@ -23,6 +23,13 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      * values).
      */
     private boolean isLocallyConfigured;
+    
+    
+    /**
+     * Tells if this project is locally deactivated.
+     */
+    private boolean isLocallyDeactivated = false;
+    
 
     /**
      * Instance of the localValues nested class.
@@ -40,8 +47,12 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
         if (optionalBlock != null) {
             this.isLocallyConfigured = true;
             this.localValues = optionalBlock;
+            this.isLocallyDeactivated = optionalBlock.isLocallyDeactivated;
+            
         } else {
             this.isLocallyConfigured = false;
+            this.isLocallyDeactivated = false;
+            
         }
     }
 
@@ -76,6 +87,15 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
      */
     public boolean getIsLocallyConfigured() {
         return isLocallyConfigured;
+    }
+    
+    /**
+     * Returns isLocallyDeactivated.
+     * 
+     * @return isLocallyDeactivated value.
+     */
+    public boolean getIsLocallyDeactivated() {
+        return isLocallyDeactivated;
     }
 
     @Override
@@ -140,6 +160,10 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
          * Max restart depth.
          */
         private int maxDepth;
+        /**
+         * Tells if this job is deactivated for global reincarnations.
+         */
+        private boolean isLocallyDeactivated;
 
         /**
          * Constructor.
@@ -150,9 +174,10 @@ public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
          *            what is the maximal restart depth for this particular job.
          */
         @DataBoundConstructor
-        public LocalValues(boolean isEnabled, int maxDepth) {
+        public LocalValues(boolean isEnabled, int maxDepth, boolean isLocallyDeactivated) {
             this.isEnabled = isEnabled;
             this.maxDepth = maxDepth;
+            this.isLocallyDeactivated = isLocallyDeactivated;
         }
     }
 }

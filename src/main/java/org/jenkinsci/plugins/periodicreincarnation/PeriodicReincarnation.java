@@ -7,9 +7,9 @@ import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.scheduler.CronTab;
-
 import antlr.ANTLRException;
 import hudson.Extension;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -305,7 +305,13 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      * @return true should be tested, false otherwise
      */
     private boolean isValidCandidateForRestart(final AbstractProject<?, ?> project) {
+        boolean isLocallyDeactivated = false;
+        JobLocalConfiguration property = (JobLocalConfiguration) project.getProperty(JobLocalConfiguration.class); 
+        if (property != null) {
+            isLocallyDeactivated = property.getIsLocallyDeactivated();
+        }
         return project != null
+                && !isLocallyDeactivated
                 && !project.isDisabled()
                 && project.isBuildable()
                 && project.getLastBuild() != null

@@ -2,6 +2,9 @@
 xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:block>
     <f:optionalBlock help="/plugin/periodic-reincarnation/local-config-help.html" field="optionalBlock" title="${%title.localjobsection}" checked="${instance.getIsLocallyConfigured()}">
+      <f:entry title="${%Disable global periodic reinacnation for this job}" >
+         <f:checkbox field="localValues.isLocallyDeactivated" checked="${instance.getIsLocallyDeactivated()}"/>        
+      </f:entry>
       <f:entry title="${%title.enabledisabletrigger}" >
          <f:checkbox field="localValues.isEnabled" checked="${instance.getIsEnabled()}"/>
         Max restart depth: <f:textbox field="localValues.maxDepth" value="${instance.getMaxDepth()}" style="width: 50px" />
