@@ -137,6 +137,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
+                    <argLine>${argLine} -Xms128m -Xmx512m</argLine>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>
                 </configuration>
             </plugin>
@@ -152,6 +153,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <argLine>${argLine} -Xms128m -Xmx512m</argLine>
+                </configuration>
             </plugin>
         </plugins>
     </build>
