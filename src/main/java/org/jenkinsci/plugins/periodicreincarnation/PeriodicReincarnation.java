@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.model.AsyncPeriodicWork;
@@ -34,6 +35,14 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
      */
     private static final Logger LOGGER = Logger
             .getLogger(PeriodicReincarnation.class.getName());
+
+    /**
+     * No spam in log file 
+     */
+    @Override
+    protected Level getNormalLoggingLevel() {
+        return Level.FINEST;
+    }
 
     /**
      * For every RegEx holds the projects being restarted because of it.
