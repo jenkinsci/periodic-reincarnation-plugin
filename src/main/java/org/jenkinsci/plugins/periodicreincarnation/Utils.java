@@ -196,12 +196,15 @@ public class Utils {
         }
         boolean rslt = false;
         BufferedReader reader = null;
+        // pattern to filter out our own messages in the logs so we don't create a respawn loop
+        Pattern prPattern = Pattern.compile(".*Periodic Reincarnation.*");
         try {
             reader = new BufferedReader(new FileReader(file));
             String line;
             while ((line = reader.readLine()) != null) {
                 final Matcher matcher = pattern.matcher(line);
-                if (matcher.find()) {
+                final Matcher prMatcher = prPattern.matcher(line);
+                if (matcher.find() && !prMatcher.find()) {
                     // we have a hit
                     rslt = true;
                     if (abortAfterFirstHit) {
