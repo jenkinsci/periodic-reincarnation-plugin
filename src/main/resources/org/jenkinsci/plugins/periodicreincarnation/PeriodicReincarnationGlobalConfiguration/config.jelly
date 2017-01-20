@@ -49,7 +49,42 @@ xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
         		</table>
       		</f:repeatable>
 		</f:entry>
-  		
+		
+		<j:if test="${instance.isBFA()}">
+			<f:entry title="${%title.buildfailureobjects}" >
+	    		<f:repeatable var="bfas" items="${instance.getBfas()}">
+	        		<table width="100%">
+	         			<f:entry title="${%title.bfa}"  field="bfaValue">
+				    		<f:select name="bfas.value" value="${bfas.getValue()}" />
+						</f:entry>
+	          	 		
+	          	 		<f:entry title="${%regex.description}">
+	            			<f:textbox name="bfas.description" value="${bfas.getDescription()}" />
+	          	 		</f:entry>
+	          	 		
+	          	 		<f:entry title="${%regex.cron}">
+							<f:textbox field="regExCronTime" name="bfas.cronTime" value="${bfas.getCronTime()}" />
+	          	 		</f:entry>
+	          
+	         			<f:entry title="${%title.nodeAction}">
+	            			<f:expandableTextbox name="bfas.nodeAction" value="${bfas.getNodeAction()}" />
+	          	 		</f:entry>
+	
+	         			<f:entry title="${%title.masterAction}">
+	            			<f:expandableTextbox name="bfas.masterAction" value="${bfas.getMasterAction()}" />
+	          	 		</f:entry>
+	
+	          			<f:entry title="">
+	            			<div align="right">
+	              				<f:repeatableDeleteButton/>
+	            			</div>
+	          			</f:entry>
+	          
+	        		</table>
+	      		</f:repeatable>
+			</f:entry>
+		</j:if>
+		
   		<f:entry title="${%title.restartstablewithnochange}" help="/plugin/periodic-reincarnation/stable-without-change-help.html" field="noChange">
 			<f:checkbox checked="${it.getNoChange()}"/>
 	 	</f:entry>
