@@ -10,6 +10,12 @@ import antlr.ANTLRException;
 import hudson.AbortException;
 import hudson.scheduler.CronTab;
 
+/**
+ * Abstract Class for the periodic Triggers. Like Regular Expression or Build Failure Cause.
+ * 
+ * @author Jochen Gietzen
+ *
+ */
 public abstract class PeriodicTrigger {
 
     /**
@@ -18,15 +24,16 @@ public abstract class PeriodicTrigger {
     private static final Logger LOGGER = Logger.getLogger(PeriodicTrigger.class.getName());
 
     /**
-     * Value of the reg ex as String.
+     * Value of the periodic trigger as String.
      */
     public String value;
+    
     /**
-     * Description for this regex.
+     * Description for this periodic trigger.
      */
     public String description;
     /**
-     * Cron time format for this regex. Overrides the globally configured cron
+     * Cron time format for this periodic trigger. Overrides the globally configured cron
      * time if set.
      */
     public String cronTime;
@@ -40,12 +47,12 @@ public abstract class PeriodicTrigger {
     public String masterAction;
 
     /**
-     * Constructor. Creates a reg ex.
+     * Constructor. Creates a periodic trigger.
      * 
      * @param value
-     *            the reg ex.
+     *            the value of the specific class - like a regex or failure id.
      * @param description
-     *            regex description
+     *            periodic trigger description
      * @param cronTime
      *            cron time format.
      * @param nodeAction
@@ -63,16 +70,16 @@ public abstract class PeriodicTrigger {
     }
 
     /**
-     * Returns this reg ex.
+     * Returns this periodic trigger value.
      * 
-     * @return the reg ex value.
+     * @return the periodic trigger value.
      */
     public String getValue() {
         return this.value;
     }
 
     /**
-     * Returns a description for this regex.
+     * Returns a description for this periodic trigger.
      * 
      * @return Description as String.
      */
@@ -81,7 +88,7 @@ public abstract class PeriodicTrigger {
     }
 
     /**
-     * Returns the cron time for this particular regex.
+     * Returns the cron time for this particular periodic trigger.
      * 
      * @return crontime as String.
      */

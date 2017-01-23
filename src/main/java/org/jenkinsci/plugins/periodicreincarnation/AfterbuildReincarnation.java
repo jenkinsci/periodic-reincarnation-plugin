@@ -62,9 +62,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         }
 
         if (!this.isLocallyEnabled) {
-            // try to restart the project by finding a matching regEx or restart
+            // try to restart the project by finding a matching regEx or FailureCause or restart
             // it because of an unchanged configuration
-//            regExRestart(build);
             periodicTriggerRestart(build);
             noChangeRestart(build, globalConfig);
         } else {
@@ -108,10 +107,11 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
 
     /**
      * Checks if we can restart the project for a RegEx hit.
-     * 
+     * @deprecated Replaced by periodicTriggerRestart after the integration of BuildFailureAnalyzer
      * @param build
      *            the build
      */
+    @Deprecated
     private void regExRestart(AbstractBuild<?, ?> build) {
         final RegEx regEx = Utils.checkBuild(build);
         if (regEx != null && checkRestartDepth(build)) {
@@ -123,7 +123,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
 
 
     /**
-     * Checks if we can restart the project for a RegEx hit.
+     * Checks if we can restart the project for a FailureCause or RegEx hit.
      * 
      * @param build
      *            the build
@@ -133,8 +133,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
     		final BuildFailureObject bfa = Utils.checkBuildForBuildFailure(build);
     		if(bfa != null && checkRestartDepth(build)){
     			try{
+    				String name = bfa.getFailureCauseName();
     				Utils.restart((AbstractProject<?, ?>) build.getProject(),
-    	                    "(Afterbuild restart) Build Failure Cause hit: " + bfa.getFailureCauseName(), bfa,
+    	                    "(Afterbuild restart) Build Failure Cause hit: " + name, bfa,
     	                    Constants.AFTERBUILDQUIETPERIOD);
     			}catch(AbortException e) {
     				Utils.restart((AbstractProject<?, ?>) build.getProject(),

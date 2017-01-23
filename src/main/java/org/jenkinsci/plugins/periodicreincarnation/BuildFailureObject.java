@@ -12,9 +12,9 @@ import com.sonyericsson.jenkins.plugins.bfa.model.FailureCause;
 import hudson.AbortException;
 
 /**
- * Class for handling regular expressions.
+ * Class for handling Failure Causes of Build-Failure-Plugin.
  * 
- * @author yboev
+ * @author Jochen Gietzen
  * 
  */
 public class BuildFailureObject extends PeriodicTrigger {
@@ -25,12 +25,12 @@ public class BuildFailureObject extends PeriodicTrigger {
     private static final Logger LOGGER = Logger.getLogger(BuildFailureObject.class.getName());
 
     /**
-     * Constructor. Creates a reg ex.
+     * Constructor. Creates a failure cause.
      * 
      * @param value
-     *            the reg ex.
+     *            the failure cause id.
      * @param description
-     *            regex description
+     *            failure cause description
      * @param cronTime
      *            cron time format.
      * @param nodeAction
@@ -45,11 +45,11 @@ public class BuildFailureObject extends PeriodicTrigger {
 
     
     /**
-     * Returns the pattern corresponding to this reg ex.
+     * Returns the Id of this Failure Cause.
      * 
-     * @return the pattern.
+     * @return the failure cause id.
      * @throws AbortException
-     *             if the pattern could not be compiled.
+     *             if the FailureCause ID doesn't exist in the BuildFailure Database.
      */
     public String getFailureCause() throws AbortException {
         Collection<String> causes = Utils.getAvailableFailureCausesIds();
@@ -60,11 +60,11 @@ public class BuildFailureObject extends PeriodicTrigger {
     
 
     /**
-     * Returns the pattern corresponding to this reg ex.
+     * Returns the Name of this Failure Cause.
      * 
-     * @return the pattern.
+     * @return the failure cause name.
      * @throws AbortException
-     *             if the pattern could not be compiled.
+     *             if the FailureCause ID doesn't exist in the BuildFailure Database.
      */
     public String getFailureCauseName() throws AbortException {
     	Collection<String> causes = Utils.getAvailableFailureCausesIds();

@@ -46,7 +46,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * For every RegEx holds the projects being restarted because of it.
+     * For every periodicTrigger holds the projects being restarted because of it.
      */
     private HashMap<PeriodicTrigger, ArrayList<AbstractProject<?, ?>>> periodicTriggerRestartList;
 
@@ -108,7 +108,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         final long currentTime = System.currentTimeMillis();
 
         // Add projects to be restarted.
-        addProjectsFoundByRegExHit(currentTime);
+        addProjectsFoundByPeriodicTriggerHit(currentTime);
         if (cron != null && config.isRestartUnchangedJobsEnabled()) {
             addUnchangedProjects(cron, currentTime);
         }
@@ -120,7 +120,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Returns the number of projects scheduled for restart because of a RegEx
+     * Returns the number of projects scheduled for restart because of a periodicTrigger
      * hit.
      * 
      * @return the number as int.
@@ -166,9 +166,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
                 + ", Unchanged restart "
                 + this.getNumberOfProjectsForUnchangedRestart() + ")" + "\n";
 
-        // Restarts all projects found by RegEx (also adds them to summary for
+        // Restarts all projects found by periodicTrigger (also adds them to summary for
         // printing)
-        summary += restartRegExProjects();
+        summary += restartPeriodicTriggerProjects();
 
         // Restarts all projects found by no difference between the last two
         // builds criteria (also adds them to summary for printing)
@@ -198,12 +198,12 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Restarts all projects found via RegEx Hit. Also produces log information
+     * Restarts all projects found via PeriodicTrigger Hit. Also produces log information
      * and returns it upon exit.
      * 
      * @return the output that should be added to summary String.
      */
-    private String restartRegExProjects() {
+    private String restartPeriodicTriggerProjects() {
         final StringBuilder summary = new StringBuilder();
         for (PeriodicTrigger perTri : this.periodicTriggerRestartList.keySet()) {
             summary.append(getRestartCause(perTri) + ": "
@@ -221,8 +221,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Returns the restart cause for a RegEx. The cause is built from the
-     * description if there is one, if not then the value of the regex itself
+     * Returns the restart cause for a PeriodicTrigger. The cause is built from the
+     * description if there is one, if not then the value of the PeriodicTrigger itself
      * becomes the cause.
      * 
      * @param perTri
@@ -273,14 +273,14 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     
     
     /**
-     * Adds all projects found because of a regEx hit to the periodicTriggerRestartList
+     * Adds all projects found because of a periodicTrigger hit to the periodicTriggerRestartList
      * Map.
      * 
      * @param currentTime
      *            current time, recorded previously.
      */
-    private void addProjectsFoundByRegExHit(final long currentTime) {
-    	//TODO: Here you have to catch every PeriodicTrigger Class existing!
+    private void addProjectsFoundByPeriodicTriggerHit(final long currentTime) {
+    	//IMPORTANT: Here you have to catch every PeriodicTrigger Class existing!
         if (PeriodicReincarnationGlobalConfiguration.get().getPeriodicTriggers() == null && PeriodicReincarnationGlobalConfiguration.get().getPeriodicTriggers().size() > 0) {
             return;
         }
@@ -341,7 +341,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Determines if a project should be tested for RegEx match or no error
+     * Determines if a project should be tested for periodicTrigger match or no error
      * between the last two builds.
      * 
      * @param project

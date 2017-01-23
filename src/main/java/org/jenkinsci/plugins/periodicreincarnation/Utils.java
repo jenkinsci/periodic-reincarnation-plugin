@@ -160,11 +160,11 @@ public class Utils {
 	}
 	
 	/**
-	 * Checks if a certain build matches any of the given regular expressions.
+	 * Checks if a certain build matches any of the given Failure Cause.
 	 * 
 	 * @param build
 	 *            the build.
-	 * @return RegEx object if at least one match, null otherwise.
+	 * @return BuildFailureObject if at least one match, null otherwise.
 	 */
 	protected static BuildFailureObject checkBuildForBuildFailure(Run<?, ?> build) {
 		final PeriodicReincarnationGlobalConfiguration config = new PeriodicReincarnationGlobalConfiguration();
@@ -204,7 +204,7 @@ public class Utils {
 	}
 
 	/**
-	 * Checks if a certain build matches the given regular expression.
+	 * Checks if a certain build matches the given Build Failure Cause.
 	 * 
 	 * @param build
 	 *            the build.
@@ -232,6 +232,12 @@ public class Utils {
 		return false;
 	}
 
+	
+	/**
+	 * Determine if the plugin build-failure-analyzer is available
+	 * 
+	 * @return true iff pluginManager contains "build-failure-analyzer"
+	 */
 	public static boolean isBfaAvailable() {
 		return Jenkins.getInstance().pluginManager.getPlugin("build-failure-analyzer") != null;
 	}
@@ -347,11 +353,9 @@ public class Utils {
 	}
 
 	/**
-	 * Reads all available failure causes from Build Failure Analyzer
-	 * Plugin.
+	 * Searches for a FailureCause by its ID
 	 * 
-	 * @return Returns the list of all available failure causes (names and
-	 *         ids).
+	 * @return the FailureCause object, if one with the given id exists, null otherwise
 	 */
 	public static FailureCause getFailureCauseById(String id) {
 		try{
@@ -364,6 +368,12 @@ public class Utils {
 		return null;
 	}
 
+	/**
+	 * Returns all available failure cause ids as string from Build Failure Analyzer
+	 * Plugin.
+	 * 
+	 * @return Returns the list of all available failure cause ids.
+	 */
 	public static List<String> getAvailableFailureCausesIds() {
 		return getAvailableFailureCausesIds(false);
 	}
@@ -372,8 +382,9 @@ public class Utils {
 	 * Reads all available failure causes from Build Failure Analyzer
 	 * Plugin.
 	 * 
-	 * @return Returns the list of all available failure causes (names and
-	 *         ids).
+	 * @param true if string should contain name, false if it should contain id
+	 * 
+	 * @return Returns list of ids(false) or the names(true)
 	 */
 	public static List<String> getAvailableFailureCausesIds(boolean names) {
 		Collection<FailureCause> failureCausesColl;

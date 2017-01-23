@@ -160,7 +160,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
     }
 
     /**
-     * Checks if a regular expression entered be compiled.
+     * Checks if a regular expression entered could be compiled.
      * 
      * @param value
      *            the value of the reg ex to be checked.
@@ -180,7 +180,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
     }
 
     /**
-     * Checks if a cron tab for a regEx can be compiled.
+     * Checks if a cron tab for a given cron could be compiled.
      * @param value
      *            the value of the cron time to be checked.
      * @return true if the cron tab can be compiled, false otherwise.
@@ -192,7 +192,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
             throws NullPointerException, ANTLRException {
         if ("".equals(value)) {
             return FormValidation
-                    .warning("Global cron time will be used for this regular expression.");
+                    .warning("Global cron time will be used for this given Cron.");
         }
         return this.doCheckCronTime(value);
     }
@@ -208,6 +208,10 @@ public class PeriodicReincarnationGlobalConfiguration extends
     }
 
 
+    /**
+     * Fills the Selectbox of a BuildFailure Object with the possible entries, found in the FailureCause Database
+     * @return the filled ListBoxModel
+     */
     public ListBoxModel doFillBfaValueItems() {
 		ListBoxModel items = new ListBoxModel();
 		Set<FailureCause> causes = new HashSet<FailureCause>();
@@ -223,7 +227,10 @@ public class PeriodicReincarnationGlobalConfiguration extends
 		return items;
 	}
     
-    
+    /**
+     * Determines the existence of the build-failure-analyzer plugin
+     * @return true iff "build-failure-analyzer" is installed
+     */
     public static boolean isBFA() {
     	return Utils.isBfaAvailable();
     }
