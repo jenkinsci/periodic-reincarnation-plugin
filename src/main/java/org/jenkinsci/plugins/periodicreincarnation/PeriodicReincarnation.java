@@ -10,6 +10,7 @@ import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
 import hudson.scheduler.CronTab;
 import antlr.ANTLRException;
+import hudson.AbortException;
 import hudson.Extension;
 
 import java.util.ArrayList;
@@ -46,9 +47,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * For every RegEx holds the projects being restarted because of it.
+     * For every periodicTrigger holds the projects being restarted because of it.
      */
-    private HashMap<RegEx, ArrayList<AbstractProject<?, ?>>> regExRestartList;
+    private HashMap<PeriodicTrigger, ArrayList<AbstractProject<?, ?>>> periodicTriggerRestartList;
 
     /**
      * Set with all projects scheduled for restart. Used to determine if a
@@ -100,7 +101,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         // Initialize the data structures where the to-be-restarted projects are
         // held temporarily.
         // Needed for sorting them by the reason for the restart.
-        this.regExRestartList = new HashMap<RegEx, ArrayList<AbstractProject<?, ?>>>();
+        this.periodicTriggerRestartList = new HashMap<PeriodicTrigger, ArrayList<AbstractProject<?, ?>>>();
         this.scheduledProjects = new HashSet<String>();
         this.unchangedRestartProjects = new ArrayList<AbstractProject<?, ?>>();
 
@@ -108,7 +109,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         final long currentTime = System.currentTimeMillis();
 
         // Add projects to be restarted.
-        addProjectsFoundByRegExHit(currentTime);
+        addProjectsFoundByPeriodicTriggerHit(currentTime);
         if (cron != null && config.isRestartUnchangedJobsEnabled()) {
             addUnchangedProjects(cron, currentTime);
         }
@@ -120,15 +121,15 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Returns the number of projects scheduled for restart because of a RegEx
+     * Returns the number of projects scheduled for restart because of a periodicTrigger
      * hit.
      * 
      * @return the number as int.
      */
-    private int getNumberOfProjectsForRegExRestart() {
+    private int getNumberOfProjectsForPeriodicTriggerRestart() {
         int count = 0;
-        for (RegEx regEx : this.regExRestartList.keySet()) {
-            count += this.regExRestartList.get(regEx).size();
+        for (PeriodicTrigger perTri : this.periodicTriggerRestartList.keySet()) {
+            count += this.periodicTriggerRestartList.get(perTri).size();
         }
         return count;
     }
@@ -161,14 +162,14 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         // shows which projects have been restarted during this cron-cycle.
         String summary = "Periodic Reincarnation cron restart summary:" + "\n";
         summary += "Number of projects to restart: "
-                + this.countProjectsForRestart() + " (RegEx hit "
-                + this.getNumberOfProjectsForRegExRestart()
+                + this.countProjectsForRestart() + " (Periodic Trigger hit "
+                + this.getNumberOfProjectsForPeriodicTriggerRestart()
                 + ", Unchanged restart "
                 + this.getNumberOfProjectsForUnchangedRestart() + ")" + "\n";
 
-        // Restarts all projects found by RegEx (also adds them to summary for
+        // Restarts all projects found by periodicTrigger (also adds them to summary for
         // printing)
-        summary += restartRegExProjects();
+        summary += restartPeriodicTriggerProjects();
 
         // Restarts all projects found by no difference between the last two
         // builds criteria (also adds them to summary for printing)
@@ -198,20 +199,20 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Restarts all projects found via RegEx Hit. Also produces log information
+     * Restarts all projects found via PeriodicTrigger Hit. Also produces log information
      * and returns it upon exit.
      * 
      * @return the output that should be added to summary String.
      */
-    private String restartRegExProjects() {
+    private String restartPeriodicTriggerProjects() {
         final StringBuilder summary = new StringBuilder();
-        for (RegEx regEx : this.regExRestartList.keySet()) {
-            summary.append(getRestartCause(regEx) + ": "
-                    + this.regExRestartList.get(regEx).size()
+        for (PeriodicTrigger perTri : this.periodicTriggerRestartList.keySet()) {
+            summary.append(getRestartCause(perTri) + ": "
+                    + this.periodicTriggerRestartList.get(perTri).size()
                     + " projects scheduled for restart" + "\n");
             final StringBuilder sb = new StringBuilder();
-            for (AbstractProject<?, ?> proj : this.regExRestartList.get(regEx)) {
-                Utils.restart(proj, getRestartCause(regEx), regEx, Constants.NORMALQUIETPERIOD);
+            for (AbstractProject<?, ?> proj : this.periodicTriggerRestartList.get(perTri)) {
+                Utils.restart(proj, getRestartCause(perTri), perTri, Constants.NORMALQUIETPERIOD);
                 sb.append("\t" + proj.getDisplayName() + "\n");
             }
 
@@ -221,56 +222,90 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Returns the restart cause for a RegEx. The cause is built from the
-     * description if there is one, if not then the value of the regex itself
+     * Returns the restart cause for a PeriodicTrigger. The cause is built from the
+     * description if there is one, if not then the value of the PeriodicTrigger itself
      * becomes the cause.
      * 
-     * @param regEx
-     *            the RegEx.
+     * @param perTri
+     *            the periodic trigger.
      * @return the restart cause as String.
      */
-    private String getRestartCause(RegEx regEx) {
+    private String getRestartCause(PeriodicTrigger perTri) {
         String restartCause;
-        if (regEx.getDescription() != null
-                && regEx.getDescription().length() > 1) {
-            restartCause = regEx.getDescription() + "(" + regEx.getValue()
+        if (perTri.getDescription() != null
+                && perTri.getDescription().length() > 1) {
+            if(Utils.isBfaAvailable()) {
+            	if(perTri.getClass() == BuildFailureObject.class) {
+            		String val = perTri.getValue();
+            		try {
+            			val = ((BuildFailureObject)perTri).getFailureCauseName();
+					} catch (AbortException e) {
+						LOGGER.warning("The FailureCause ID " + perTri.getValue() + " doesn't seem to exist. Might have been deleted");
+					}
+            		restartCause = perTri.getDescription() + "(" + val + ")";
+            	}else {
+            		restartCause = perTri.getDescription() + "(" + perTri.getValue()
+            		+ ")";
+            	}
+            }else {
+            	restartCause = perTri.getDescription() + "(" + perTri.getValue()
                     + ")";
+            }
         } else {
-            restartCause = "RegEx hit: " + regEx.getValue();
+        	if(Utils.isBfaAvailable()) {
+            	if(perTri.getClass() == BuildFailureObject.class) {
+            		String val = perTri.getValue();
+            		try {
+            			val = ((BuildFailureObject)perTri).getFailureCauseName();
+					} catch (AbortException e) {
+						LOGGER.warning("The FailureCause ID " + perTri.getValue() + " doesn't seem to exist. Might have been deleted");
+					}
+            		restartCause = "RegEx hit: " + val;
+            	}else {
+            		restartCause = "RegEx hit: " + perTri.getValue();
+            	}
+        	}else {
+        		restartCause = "RegEx hit: " + perTri.getValue();
+        	}
         }
         return restartCause;
     }
 
+    
+    
     /**
-     * Adds all projects found because of a regEx hit to the regExRestartList
+     * Adds all projects found because of a periodicTrigger hit to the periodicTriggerRestartList
      * Map.
      * 
      * @param currentTime
      *            current time, recorded previously.
      */
-    private void addProjectsFoundByRegExHit(final long currentTime) {
-        if (PeriodicReincarnationGlobalConfiguration.get().getRegExprs() == null) {
+    private void addProjectsFoundByPeriodicTriggerHit(final long currentTime) {
+    	//IMPORTANT: Here you have to catch every PeriodicTrigger Class existing!
+        if (PeriodicReincarnationGlobalConfiguration.get().getPeriodicTriggers() == null && PeriodicReincarnationGlobalConfiguration.get().getPeriodicTriggers().size() > 0) {
             return;
         }
-        for (RegEx regEx : PeriodicReincarnationGlobalConfiguration.get()
-                .getRegExprs()) {
-            if (regEx.isTimeToRestart(currentTime)) {
+        for (PeriodicTrigger perTri : PeriodicReincarnationGlobalConfiguration.get()
+                .getPeriodicTriggers()) {
+            if (perTri.isTimeToRestart(currentTime)) {
                 for (Item item : Jenkins.getInstance().getAllItems()) {
                     if (!(item instanceof AbstractProject <?,?>)) 
                        continue;
-                    AbstractProject <?,?> project = (AbstractProject <?,?>) item; 
+                    AbstractProject <?,?> project = (AbstractProject <?,?>) item;
                     if (isValidCandidateForRestart(project)
                             && !scheduledProjects.contains(project
-                                    .getFullDisplayName())
-                            && Utils.checkBuild(project.getLastBuild(), regEx)) {
-                        this.scheduledProjects
-                                .add(project.getFullDisplayName());
-                        if (this.regExRestartList.containsKey(regEx)) {
-                            this.regExRestartList.get(regEx).add(project);
-                        } else {
-                            final ArrayList<AbstractProject<?, ?>> newList = new ArrayList<AbstractProject<?, ?>>();
-                            newList.add(project);
-                            this.regExRestartList.put(regEx, newList);
+                                    .getFullDisplayName())) {
+                        if((Utils.isBfaAvailable() && perTri.getClass() == BuildFailureObject.class 
+                        		&& Utils.checkBuild(project.getLastBuild(), (BuildFailureObject) perTri))
+                        		|| perTri.getClass() == RegEx.class && Utils.checkBuild(project.getLastBuild(), (RegEx) perTri)) {
+                        	this.scheduledProjects.add(project.getFullDisplayName());
+                        	if (this.periodicTriggerRestartList.containsKey(perTri)) {
+                                this.periodicTriggerRestartList.get(perTri).add(project);
+                            } else {
+                                final ArrayList<AbstractProject<?, ?>> newList = new ArrayList<AbstractProject<?, ?>>();
+                                newList.add(project);
+                                this.periodicTriggerRestartList.put(perTri, newList);
+                            }
                         }
                     }
                 }
@@ -313,7 +348,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
     }
 
     /**
-     * Determines if a project should be tested for RegEx match or no error
+     * Determines if a project should be tested for periodicTrigger match or no error
      * between the last two builds.
      * 
      * @param project

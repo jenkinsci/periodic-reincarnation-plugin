@@ -1,22 +1,27 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import hudson.scheduler.CronTab;
-import hudson.Extension;
-import hudson.util.FormValidation;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.StaplerRequest;
 
-import antlr.ANTLRException;
+import com.sonyericsson.jenkins.plugins.bfa.model.FailureCause;
 
+import antlr.ANTLRException;
+import hudson.Extension;
+import hudson.scheduler.CronTab;
+import hudson.util.FormValidation;
 import jenkins.model.GlobalConfiguration;
+import net.sf.json.JSONObject;
+import hudson.util.ListBoxModel;
 
 /**
  * Implements the interface GlobalConfiguration from Jenkins. Gives the option
@@ -49,6 +54,10 @@ public class PeriodicReincarnationGlobalConfiguration extends
      * List of all regular expressions.
      */
     private List<RegEx> regExprs;
+    /**
+     * List of all Build Failure Cause Objects.
+     */
+    private List<BuildFailureObject> bfas;
     /**
      * maximal restart depth for afterbuild restarts.
      */
@@ -83,6 +92,8 @@ public class PeriodicReincarnationGlobalConfiguration extends
      *            contains the cron time.
      * @param regExprs
      *            list of all regular expressions.
+     * @param bfas
+     * 			  list of all Build Failure Cause Objects
      * @param maxDepth
      *            max restart depth.
      * @param noChange
@@ -91,12 +102,15 @@ public class PeriodicReincarnationGlobalConfiguration extends
     @DataBoundConstructor
     public PeriodicReincarnationGlobalConfiguration(String activeTrigger,
             String maxDepth, String activeCron, String cronTime,
-            List<RegEx> regExprs, String noChange) {
+            List<RegEx> regExprs, List<BuildFailureObject> bfas, String noChange) {
         this.activeTrigger = activeTrigger;
         this.maxDepth = maxDepth;
         this.activeCron = activeCron;
         this.cronTime = cronTime;
         this.regExprs = regExprs;
+        if(Utils.isBfaAvailable()) {
+        	this.bfas = bfas;
+        }
         // this.logInfo = logInfo;
         this.noChange = noChange;
     }
@@ -111,6 +125,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
             throws FormException {
         this.regExprs = req.bindJSON(
                 PeriodicReincarnationGlobalConfiguration.class, json).regExprs;
+        this.bfas = req.bindJSON(PeriodicReincarnationGlobalConfiguration.class, json).bfas;
         this.activeTrigger = json.getString("activeTrigger").trim();
         this.maxDepth = json.getString("maxDepth").trim();
         this.activeCron = json.getString("activeCron").trim();
@@ -145,7 +160,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
     }
 
     /**
-     * Checks if a regular expression entered be compiled.
+     * Checks if a regular expression entered could be compiled.
      * 
      * @param value
      *            the value of the reg ex to be checked.
@@ -165,7 +180,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
     }
 
     /**
-     * Checks if a cron tab for a regEx can be compiled.
+     * Checks if a cron tab for a given cron could be compiled.
      * @param value
      *            the value of the cron time to be checked.
      * @return true if the cron tab can be compiled, false otherwise.
@@ -177,7 +192,7 @@ public class PeriodicReincarnationGlobalConfiguration extends
             throws NullPointerException, ANTLRException {
         if ("".equals(value)) {
             return FormValidation
-                    .warning("Global cron time will be used for this regular expression.");
+                    .warning("Global cron time will be used for this given Cron.");
         }
         return this.doCheckCronTime(value);
     }
@@ -192,6 +207,34 @@ public class PeriodicReincarnationGlobalConfiguration extends
                 PeriodicReincarnationGlobalConfiguration.class);
     }
 
+
+    /**
+     * Fills the Selectbox of a BuildFailure Object with the possible entries, found in the FailureCause Database
+     * @return the filled ListBoxModel
+     */
+    public ListBoxModel doFillBfaValueItems() {
+		ListBoxModel items = new ListBoxModel();
+		Set<FailureCause> causes = new HashSet<FailureCause>();
+		if(this.bfas != null && this.bfas.size() > 0) {
+			for(BuildFailureObject fc : this.bfas) {
+				causes.add(Utils.getFailureCauseById(fc.getValue()));
+			}
+		}
+		causes.addAll(Utils.getAvailableFailureCauses());
+		for(FailureCause fc : causes) {
+			items.add(fc.getName(), fc.getId());
+		}
+		return items;
+	}
+    
+    /**
+     * Determines the existence of the build-failure-analyzer plugin
+     * @return true iff "build-failure-analyzer" is installed
+     */
+    public static boolean isBFA() {
+    	return Utils.isBfaAvailable();
+    }
+    
     /**
      * Returns the field noChange.
      * 
@@ -218,7 +261,35 @@ public class PeriodicReincarnationGlobalConfiguration extends
     public List<RegEx> getRegExprs() {
         return this.regExprs;
     }
+    
+    /**
+     * Returns a list containing all Build Failure Cause Objects.
+     * @return the list with bfas.
+     */
+    public List<BuildFailureObject> getBfas() {
+    	return this.bfas;
+    }
 
+    
+    /**
+     * Returns a list containing all PeriodicTrigger Objects like RegExp or BuildFailureObject
+     * @returnthe list with periodicTriggers
+     */
+    public List<PeriodicTrigger> getPeriodicTriggers() {
+    	List<PeriodicTrigger> perTri = new ArrayList<PeriodicTrigger>();
+    	if(this.bfas != null) {
+    		for(BuildFailureObject bfa:bfas) {
+    			perTri.add(bfa);
+    		}
+    	}
+    	if(this.regExprs != null) {
+    		for(RegEx re:regExprs) {
+    			perTri.add(re);
+    		}
+    	}
+    	return perTri;
+    }
+    
     /**
      * Returns the field cron time.
      * 
