@@ -170,6 +170,7 @@ public class Utils {
                 LOGGER.warning("Log file cound not be retrieved for project: " + build.getParent().getDisplayName());
                 return false;
             }
+            LOGGER.finest("Start check log file for project: " + build.getParent().getDisplayName());
             return checkFile(build.getLogFile(), regEx.getPattern(), true);
         } catch (AbortException e) {
             e.printStackTrace();

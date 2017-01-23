@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import hudson.model.AsyncPeriodicWork;
+import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.TaskListener;
 import hudson.model.AbstractProject;
@@ -254,7 +255,10 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         for (RegEx regEx : PeriodicReincarnationGlobalConfiguration.get()
                 .getRegExprs()) {
             if (regEx.isTimeToRestart(currentTime)) {
-                for (AbstractProject<?, ?> project : Jenkins.getInstance().getProjects()) {
+                for (Item item : Jenkins.getInstance().getAllItems()) {
+                    if (!(item instanceof AbstractProject <?,?>)) 
+                       continue;
+                    AbstractProject <?,?> project = (AbstractProject <?,?>) item; 
                     if (isValidCandidateForRestart(project)
                             && !scheduledProjects.contains(project
                                     .getFullDisplayName())
@@ -288,7 +292,10 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
         try {
             cronTab = new CronTab(cron);
             if ((cronTab.ceil(currentTime).getTimeInMillis() - currentTime) == 0) {
-                for (AbstractProject<?, ?> project : Jenkins.getInstance().getProjects()) {
+                for (Item item : Jenkins.getInstance().getAllItems()) {
+                    if (!(item instanceof AbstractProject <?,?>)) 
+                       continue;
+                    AbstractProject <?,?> project = (AbstractProject <?,?>) item; 
                     if (isValidCandidateForRestart(project)
                             && Utils.qualifyForUnchangedRestart(project)
                             && !scheduledProjects.contains(project
