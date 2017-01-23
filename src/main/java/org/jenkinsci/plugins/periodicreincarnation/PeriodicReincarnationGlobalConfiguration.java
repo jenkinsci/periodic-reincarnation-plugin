@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -217,7 +218,14 @@ public class PeriodicReincarnationGlobalConfiguration extends
 		Set<FailureCause> causes = new HashSet<FailureCause>();
 		if(this.bfas != null && this.bfas.size() > 0) {
 			for(BuildFailureObject fc : this.bfas) {
-				causes.add(Utils.getFailureCauseById(fc.getValue()));
+				FailureCause failCau = Utils.getFailureCauseById(fc.getValue());
+				if(failCau != null) causes.add(failCau);
+				else {
+					Logger.getLogger(PeriodicReincarnation.class.getName())
+		            .warning("FailureCause with ID "+ fc.getValue() + " seems to be removed. "
+		            		+ "Please check every Failure Cause in the Global Configuration "
+		            		+ "used for the Periodic Reincarnation Plugin!");
+				}
 			}
 		}
 		causes.addAll(Utils.getAvailableFailureCauses());
