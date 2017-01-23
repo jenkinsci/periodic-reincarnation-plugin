@@ -158,6 +158,28 @@ public class Utils {
 		}
 		return null;
 	}
+	
+	/**
+	 * Checks if a certain build matches any of the given regular expressions.
+	 * 
+	 * @param build
+	 *            the build.
+	 * @return RegEx object if at least one match, null otherwise.
+	 */
+	protected static BuildFailureObject checkBuildForBuildFailure(Run<?, ?> build) {
+		final PeriodicReincarnationGlobalConfiguration config = new PeriodicReincarnationGlobalConfiguration();
+		final List<BuildFailureObject> bfas = config.getBfas();
+		if (bfas == null || bfas.size() == 0) {
+			return null;
+		}
+		for (final Iterator<BuildFailureObject> i = bfas.iterator(); i.hasNext();) {
+			final BuildFailureObject currentBFA = i.next();
+				if (checkBuild(build, currentBFA)) {
+					return currentBFA;
+				}
+		}
+		return null;
+	}
 
 	/**
 	 * Checks if a certain build matches the given regular expression.

@@ -1,11 +1,13 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
+import static hudson.model.Result.SUCCESS;
+
+import hudson.AbortException;
 import hudson.Extension;
-import hudson.model.TaskListener;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
+import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
-import static hudson.model.Result.SUCCESS;
 
 /**
  * This class triggers a restart automatically after a build has failed.
@@ -62,7 +64,8 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         if (!this.isLocallyEnabled) {
             // try to restart the project by finding a matching regEx or restart
             // it because of an unchanged configuration
-            regExRestart(build);
+//            regExRestart(build);
+            periodicTriggerRestart(build);
             noChangeRestart(build, globalConfig);
         } else {
             // restart project for which afterbuild restart has been enabled
@@ -118,6 +121,38 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
         }
     }
 
+
+    /**
+     * Checks if we can restart the project for a RegEx hit.
+     * 
+     * @param build
+     *            the build
+     */
+    private void periodicTriggerRestart(AbstractBuild<?, ?> build) {
+    	if(Utils.isBfaAvailable()) {
+    		final BuildFailureObject bfa = Utils.checkBuildForBuildFailure(build);
+    		if(bfa != null && checkRestartDepth(build)){
+    			try{
+    				Utils.restart((AbstractProject<?, ?>) build.getProject(),
+    	                    "(Afterbuild restart) Build Failure Cause hit: " + bfa.getFailureCauseName(), bfa,
+    	                    Constants.AFTERBUILDQUIETPERIOD);
+    			}catch(AbortException e) {
+    				Utils.restart((AbstractProject<?, ?>) build.getProject(),
+    	                    "(Afterbuild restart) Build Failure Cause hit!", bfa,
+    	                    Constants.AFTERBUILDQUIETPERIOD);
+    			}
+    			return;
+    		}
+    	}
+        final RegEx regEx = Utils.checkBuild(build);
+        if (regEx != null && checkRestartDepth(build)) {
+            Utils.restart((AbstractProject<?, ?>) build.getProject(),
+                    "(Afterbuild restart) RegEx hit in console output: " + regEx.getValue(), regEx,
+                    Constants.AFTERBUILDQUIETPERIOD);
+        }
+    }
+
+    
     /**
      * Retrieves values from global or local config.
      * 
