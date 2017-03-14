@@ -2,6 +2,8 @@ package org.jenkinsci.plugins.periodicreincarnation;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -208,6 +210,14 @@ public class PeriodicReincarnationGlobalConfiguration extends
                 PeriodicReincarnationGlobalConfiguration.class);
     }
 
+    public class FailureComparator implements Comparator<FailureCause> {
+
+		public int compare(FailureCause o1,
+				FailureCause o2) {
+			return o1.getName().compareTo(o2.getName());
+		}
+    	
+    }
 
     /**
      * Fills the Selectbox of a BuildFailure Object with the possible entries, found in the FailureCause Database
@@ -215,11 +225,11 @@ public class PeriodicReincarnationGlobalConfiguration extends
      */
     public ListBoxModel doFillBfaValueItems() {
 		ListBoxModel items = new ListBoxModel();
-		Set<FailureCause> causes = new HashSet<FailureCause>();
+		Set<FailureCause> causeSet = new HashSet<FailureCause>();
 		if(this.bfas != null && this.bfas.size() > 0) {
 			for(BuildFailureObject fc : this.bfas) {
 				FailureCause failCau = Utils.getFailureCauseById(fc.getValue());
-				if(failCau != null) causes.add(failCau);
+				if(failCau != null) causeSet.add(failCau);
 				else {
 					Logger.getLogger(PeriodicReincarnation.class.getName())
 		            .warning("FailureCause with ID "+ fc.getValue() + " seems to be removed. "
@@ -228,7 +238,9 @@ public class PeriodicReincarnationGlobalConfiguration extends
 				}
 			}
 		}
-		causes.addAll(Utils.getAvailableFailureCauses());
+		causeSet.addAll(Utils.getAvailableFailureCauses());
+		List<FailureCause> causes = new ArrayList<FailureCause>(causeSet);
+		Collections.sort(causes, new FailureComparator());
 		for(FailureCause fc : causes) {
 			items.add(fc.getName(), fc.getId());
 		}
