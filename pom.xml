@@ -37,6 +37,11 @@
             <name>Yordan Boev</name>
             <email>iordan.boev@gmail.com</email>
         </developer>
+        <developer>
+            <id>Jochen-A-Fuerbacher</id>
+            <name>Jochen A. Fuerbacher</name>
+            <email>jochen.fuerbacher@1und1.de</email>
+        </developer>
     </developers>
 
     <contributors>
