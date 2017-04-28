@@ -33,14 +33,17 @@
             <email>stefan.brausch@1und1.de</email>
         </developer>
         <developer>
-            <id>boev</id>
-            <name>Yordan Boev</name>
-            <email>iordan.boev@gmail.com</email>
-        </developer>
-        <developer>
             <id>jochenafuerbacher</id>
             <name>Jochen A. Fuerbacher</name>
             <email>jochen.fuerbacher@1und1.de</email>
+        </developer>
+        <developer>
+            <id>boev</id>
+            <name>Yordan Boev</name>
+            <email>iordan.boev@gmail.com</email>
+            <roles>
+                <role>inactive</role>
+            </roles>
         </developer>
     </developers>
 
