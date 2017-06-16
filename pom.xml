@@ -272,5 +272,5 @@
                 <version>${maven-dependency-plugin.version}</version>
             </plugin>
         </plugins>
-</project>
     </reporting>
+</project>
