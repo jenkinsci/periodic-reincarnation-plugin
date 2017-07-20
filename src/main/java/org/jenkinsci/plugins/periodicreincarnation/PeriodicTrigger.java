@@ -11,12 +11,12 @@ import hudson.AbortException;
 import hudson.scheduler.CronTab;
 
 /**
- * Abstract Class for the periodic Triggers. Like Regular Expression or Build Failure Cause.
+ * Class for the periodic Triggers. Like Regular Expression or Build Failure Cause.
  * 
  * @author Jochen Gietzen
  *
  */
-public abstract class PeriodicTrigger {
+public class PeriodicTrigger {
 
     /**
      * Logger for PeriodicReincarnation.
