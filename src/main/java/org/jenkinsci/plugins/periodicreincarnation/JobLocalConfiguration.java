@@ -1,11 +1,12 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
 import org.kohsuke.stapler.DataBoundConstructor;
+
 import hudson.Extension;
-import hudson.model.JobProperty;
-import hudson.model.JobPropertyDescriptor;
 import hudson.model.AbstractProject;
 import hudson.model.Job;
+import hudson.model.JobProperty;
+import hudson.model.JobPropertyDescriptor;
 
 /**
  * Local configuration class.
@@ -15,169 +16,168 @@ import hudson.model.Job;
  */
 public class JobLocalConfiguration extends JobProperty<Job<?, ?>> {
 
-    // private static final Logger LOGGER = Logger
-    // .getLogger(JobLocalConfiguration.class.getName());
+	// private static final Logger LOGGER = Logger
+	// .getLogger(JobLocalConfiguration.class.getName());
 
-    /**
-     * Tells if this project is locally configured(true means we override global
-     * values).
-     */
-    private boolean isLocallyConfigured;
-    
-    
-    /**
-     * Tells if this project is locally deactivated.
-     */
-    private boolean isLocallyDeactivated = false;
-    
+	/**
+	 * Tells if this project is locally configured(true means we override global
+	 * values).
+	 */
+	private boolean isLocallyConfigured;
 
-    /**
-     * Instance of the localValues nested class.
-     */
-    private LocalValues localValues;
+	/**
+	 * Tells if this project is locally deactivated.
+	 */
+	private boolean isLocallyDeactivated = false;
 
-    /**
-     * Contructor for data binding of form data.
-     * 
-     * @param optionalBlock
-     *            instance of LocalValues.
-     */
-    @DataBoundConstructor
-    public JobLocalConfiguration(LocalValues optionalBlock) {
-        if (optionalBlock != null) {
-            this.isLocallyConfigured = true;
-            this.localValues = optionalBlock;
-            this.isLocallyDeactivated = optionalBlock.isLocallyDeactivated;
-            
-        } else {
-            this.isLocallyConfigured = false;
-            this.isLocallyDeactivated = false;
-            
-        }
-    }
+	/**
+	 * Instance of the localValues nested class.
+	 */
+	private LocalValues localValues;
 
-    /**
-     * Returns isEnabled.
-     * 
-     * @return isEnabled value.
-     */
-    public boolean getIsEnabled() {
-        if (this.localValues == null) {
-            return false;
-        }
-        return this.localValues.isEnabled;
-    }
+	/**
+	 * Contructor for data binding of form data.
+	 * 
+	 * @param optionalBlock
+	 *            instance of LocalValues.
+	 */
+	@DataBoundConstructor
+	public JobLocalConfiguration(LocalValues optionalBlock) {
+		if (optionalBlock != null) {
+			this.isLocallyConfigured = true;
+			this.localValues = optionalBlock;
+			this.isLocallyDeactivated = optionalBlock.isLocallyDeactivated;
 
-    /**
-     * Returns maxDepth.
-     * 
-     * @return maxDepth value.
-     */
-    public int getMaxDepth() {
-        if (this.localValues == null) {
-            return 0;
-        }
-        return this.localValues.maxDepth;
-    }
+		} else {
+			this.isLocallyConfigured = false;
+			this.isLocallyDeactivated = false;
 
-    /**
-     * Returns isLocallyConfigured.
-     * 
-     * @return isLocallyConfigured value.
-     */
-    public boolean getIsLocallyConfigured() {
-        return isLocallyConfigured;
-    }
-    
-    /**
-     * Returns isLocallyDeactivated.
-     * 
-     * @return isLocallyDeactivated value.
-     */
-    public boolean getIsLocallyDeactivated() {
-        return isLocallyDeactivated;
-    }
+		}
+	}
 
-    @Override
-    public DescriptorImpl getDescriptor() {
-        return DESCRIPTOR;
-    }
+	/**
+	 * Returns isEnabled.
+	 * 
+	 * @return isEnabled value.
+	 */
+	public boolean getIsEnabled() {
+		if (this.localValues == null) {
+			return false;
+		}
+		return this.localValues.isEnabled;
+	}
 
-    /**
-     * Descriptor object.
-     */
-    @Extension
-    public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+	/**
+	 * Returns maxDepth.
+	 * 
+	 * @return maxDepth value.
+	 */
+	public int getMaxDepth() {
+		if (this.localValues == null) {
+			return 0;
+		}
+		return this.localValues.maxDepth;
+	}
 
-    /**
-     * Implementation of the descriptor object.
-     * 
-     * @author yboev
-     * 
-     */
-    public static final class DescriptorImpl extends JobPropertyDescriptor {
+	/**
+	 * Returns isLocallyConfigured.
+	 * 
+	 * @return isLocallyConfigured value.
+	 */
+	public boolean getIsLocallyConfigured() {
+		return isLocallyConfigured;
+	}
 
-        /** Constructor loads previously saved form data. */
-        DescriptorImpl() {
-            super(JobLocalConfiguration.class);
-            load();
-        }
+	/**
+	 * Returns isLocallyDeactivated.
+	 * 
+	 * @return isLocallyDeactivated value.
+	 */
+	public boolean getIsLocallyDeactivated() {
+		return isLocallyDeactivated;
+	}
 
-        /**
-         * Returns caption for our part of the config page.
-         * 
-         * @return caption
-         */
-        public String getDisplayName() {
-            return "PeriodicReincarnation";
-        }
+	@Override
+	public DescriptorImpl getDescriptor() {
+		return DESCRIPTOR;
+	}
 
-        /**
-         * Certainly does something.
-         * 
-         * @param item
-         *            Some item, I guess
-         * @return true
-         */
-        public boolean isApplicable(AbstractProject<?, ?> item) {
-            return true;
-        }
-    }
+	/**
+	 * Descriptor object.
+	 */
+	@Extension
+	public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
-    /**
-     * The options that unfold after enabling the local configuration for
-     * periodic reincarnation in the job config page.
-     * 
-     * @author yboev
-     * 
-     */
-    public static class LocalValues {
-        /**
-         * Tells if restart is enabled for this project.
-         */
-        private boolean isEnabled;
-        /**
-         * Max restart depth.
-         */
-        private int maxDepth;
-        /**
-         * Tells if this job is deactivated for global reincarnations.
-         */
-        private boolean isLocallyDeactivated;
+	/**
+	 * Implementation of the descriptor object.
+	 * 
+	 * @author yboev
+	 * 
+	 */
+	public static final class DescriptorImpl extends JobPropertyDescriptor {
 
-        /**
-         * Constructor.
-         * 
-         * @param isEnabled
-         *            is afterbuild restart enabled.
-         * @param maxDepth
-         *            what is the maximal restart depth for this particular job.
-         */
-        @DataBoundConstructor
-        public LocalValues(boolean isEnabled, int maxDepth, boolean isLocallyDeactivated) {
-            this.isEnabled = isEnabled;
-            this.maxDepth = maxDepth;
-            this.isLocallyDeactivated = isLocallyDeactivated;
-        }
-    }
+		/** Constructor loads previously saved form data. */
+		DescriptorImpl() {
+			super(JobLocalConfiguration.class);
+			load();
+		}
+
+		/**
+		 * Returns caption for our part of the config page.
+		 * 
+		 * @return caption
+		 */
+		public String getDisplayName() {
+			return "PeriodicReincarnation";
+		}
+
+		/**
+		 * Certainly does something.
+		 * 
+		 * @param item
+		 *            Some item, I guess
+		 * @return true
+		 */
+		public boolean isApplicable(AbstractProject<?, ?> item) {
+			return true;
+		}
+	}
+
+	/**
+	 * The options that unfold after enabling the local configuration for
+	 * periodic reincarnation in the job config page.
+	 * 
+	 * @author yboev
+	 * 
+	 */
+	public static class LocalValues {
+		/**
+		 * Tells if restart is enabled for this project.
+		 */
+		private boolean isEnabled;
+		/**
+		 * Max restart depth.
+		 */
+		private int maxDepth;
+		/**
+		 * Tells if this job is deactivated for global reincarnations.
+		 */
+		private boolean isLocallyDeactivated;
+
+		/**
+		 * Constructor.
+		 * 
+		 * @param isEnabled
+		 *            is afterbuild restart enabled.
+		 * @param maxDepth
+		 *            what is the maximal restart depth for this particular job.
+		 */
+		@DataBoundConstructor
+		public LocalValues(boolean isEnabled, int maxDepth,
+				boolean isLocallyDeactivated) {
+			this.isEnabled = isEnabled;
+			this.maxDepth = maxDepth;
+			this.isLocallyDeactivated = isLocallyDeactivated;
+		}
+	}
 }

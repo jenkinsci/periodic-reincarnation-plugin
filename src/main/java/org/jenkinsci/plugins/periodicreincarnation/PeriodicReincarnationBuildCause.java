@@ -9,24 +9,24 @@ import hudson.model.Cause;
  * 
  */
 public class PeriodicReincarnationBuildCause extends Cause {
-    /**
-     * Cause of restart for a certain job.
-     */
-    private String restartCause;
+	/**
+	 * Cause of restart for a certain job.
+	 */
+	private String restartCause;
 
-    /**
-     * Constructor.
-     * 
-     * @param s
-     *            The reason/cause for restart.
-     */
-    public PeriodicReincarnationBuildCause(String s) {
-        super();
-        this.restartCause = s;
-    }
+	/**
+	 * Constructor.
+	 * 
+	 * @param s
+	 *            The reason/cause for restart.
+	 */
+	public PeriodicReincarnationBuildCause(String s) {
+		super();
+		this.restartCause = s;
+	}
 
-    @Override
-    public String getShortDescription() {
-        return "Periodic Reincarnation - " + this.restartCause;
-    }
+	@Override
+	public String getShortDescription() {
+		return "Periodic Reincarnation - " + this.restartCause;
+	}
 }

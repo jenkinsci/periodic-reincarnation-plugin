@@ -1,25 +1,24 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.cloudbees.hudson.plugins.folder.Folder;
 
+import antlr.ANTLRException;
+import hudson.AbortException;
+import hudson.Extension;
+import hudson.model.AbstractProject;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.TaskListener;
-import hudson.model.AbstractProject;
 import hudson.scheduler.CronTab;
-import antlr.ANTLRException;
-import hudson.AbortException;
-import hudson.Extension;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.HashMap;
-
 import jenkins.model.Jenkins;
 
 /**
@@ -132,10 +131,11 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	 */
 	private int getNumberOfProjectsForPeriodicTriggerRestart() {
 		int count = 0;
-		for (PeriodicTrigger perTri : this.periodicTriggerRestartList
-				.keySet()) {
-			count += this.periodicTriggerRestartList.get(perTri).size();
+		for (Entry<PeriodicTrigger, ArrayList<AbstractProject<?, ?>>> entry : this.periodicTriggerRestartList
+				.entrySet()) {
+			count += entry.getValue().size();
 		}
+
 		return count;
 	}
 
@@ -213,14 +213,14 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	 */
 	private String restartPeriodicTriggerProjects() {
 		final StringBuilder summary = new StringBuilder();
-		for (PeriodicTrigger perTri : this.periodicTriggerRestartList
-				.keySet()) {
-			summary.append(getRestartCause(perTri) + ": "
-					+ this.periodicTriggerRestartList.get(perTri).size()
+		for (Entry<PeriodicTrigger, ArrayList<AbstractProject<?, ?>>> entry : this.periodicTriggerRestartList
+				.entrySet()) {
+			PeriodicTrigger perTri = entry.getKey();
+			ArrayList<AbstractProject<?, ?>> projects = entry.getValue();
+			summary.append(getRestartCause(perTri) + ": " + projects.size()
 					+ " projects scheduled for restart" + "\n");
 			final StringBuilder sb = new StringBuilder();
-			for (AbstractProject<?, ?> proj : this.periodicTriggerRestartList
-					.get(perTri)) {
+			for (AbstractProject<?, ?> proj : projects) {
 				Utils.restart(proj, getRestartCause(perTri), perTri,
 						Constants.NORMALQUIETPERIOD);
 				sb.append("\t" + proj.getDisplayName() + "\n");
@@ -228,6 +228,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 
 			summary.append(sb.toString());
 		}
+
 		return summary.toString();
 	}
 
@@ -299,14 +300,17 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 		// existing!
 		if (PeriodicReincarnationGlobalConfiguration.get()
 				.getPeriodicTriggers() == null
-				&& PeriodicReincarnationGlobalConfiguration.get()
-						.getPeriodicTriggers().size() > 0) {
+				|| PeriodicReincarnationGlobalConfiguration.get()
+						.getPeriodicTriggers().isEmpty()) {
 			return;
 		}
 		for (PeriodicTrigger perTri : PeriodicReincarnationGlobalConfiguration
 				.get().getPeriodicTriggers()) {
 			if (perTri.isTimeToRestart(currentTime)) {
-				for (Item item : Jenkins.getInstance().getAllItems()) {
+				Jenkins jenkins = Jenkins.getInstance();
+				if (jenkins == null)
+					continue;
+				for (Item item : jenkins.getAllItems()) {
 
 					checkFolder(item, perTri);
 					if (!(item instanceof AbstractProject<?, ?>))
@@ -368,7 +372,10 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 			cronTab = new CronTab(cron);
 			if ((cronTab.ceil(currentTime).getTimeInMillis()
 					- currentTime) == 0) {
-				for (Item item : Jenkins.getInstance().getAllItems()) {
+				Jenkins jenkins = Jenkins.getInstance();
+				if (jenkins == null)
+					return;
+				for (Item item : jenkins.getAllItems()) {
 					checkFolder(item);
 					if (!(item instanceof AbstractProject<?, ?>))
 						continue;
@@ -414,13 +421,15 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	 */
 	private boolean isValidCandidateForRestart(
 			final AbstractProject<?, ?> project) {
+		if (project == null)
+			return false;
 		boolean isLocallyDeactivated = false;
 		JobLocalConfiguration property = (JobLocalConfiguration) project
 				.getProperty(JobLocalConfiguration.class);
 		if (property != null) {
 			isLocallyDeactivated = property.getIsLocallyDeactivated();
 		}
-		return project != null && !isLocallyDeactivated && !project.isDisabled()
+		return !isLocallyDeactivated && !project.isDisabled()
 				&& project.isBuildable() && project.getLastBuild() != null
 				&& project.getLastBuild().getResult() != null
 				&& project.getLastBuild().getResult()
