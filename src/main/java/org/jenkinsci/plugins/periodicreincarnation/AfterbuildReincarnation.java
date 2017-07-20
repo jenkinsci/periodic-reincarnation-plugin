@@ -39,7 +39,6 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
 
 		// stop if no build or project can be retrieved
 		if (build == null || build.getProject() == null) {
-			// || !(build.getProject() instanceof AbstractProject<?, ?>)) {
 			return;
 		}
 
@@ -109,25 +108,6 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
 			Utils.restart((AbstractProject<?, ?>) build.getProject(),
 					"(Afterbuild restart) No difference between last two builds",
 					null, Constants.AFTERBUILDQUIETPERIOD);
-		}
-	}
-
-	/**
-	 * Checks if we can restart the project for a RegEx hit.
-	 * 
-	 * @deprecated Replaced by periodicTriggerRestart after the integration of
-	 *             BuildFailureAnalyzer
-	 * @param build
-	 *            the build
-	 */
-	@Deprecated
-	private void regExRestart(AbstractBuild<?, ?> build) {
-		final RegEx regEx = Utils.checkBuild(build);
-		if (regEx != null && checkRestartDepth(build)) {
-			Utils.restart((AbstractProject<?, ?>) build.getProject(),
-					"(Afterbuild restart) RegEx hit in console output: "
-							+ regEx.getValue(),
-					regEx, Constants.AFTERBUILDQUIETPERIOD);
 		}
 	}
 

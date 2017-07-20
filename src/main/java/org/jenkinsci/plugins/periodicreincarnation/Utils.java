@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.periodicreincarnation;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -15,7 +14,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.sonyericsson.jenkins.plugins.bfa.PluginImpl;
-import com.sonyericsson.jenkins.plugins.bfa.model.*;
+import com.sonyericsson.jenkins.plugins.bfa.model.FailureCause;
+import com.sonyericsson.jenkins.plugins.bfa.model.FailureCauseBuildAction;
+import com.sonyericsson.jenkins.plugins.bfa.model.FoundFailureCause;
 
 import hudson.AbortException;
 import hudson.model.AbstractBuild;
@@ -27,7 +28,6 @@ import hudson.model.Result;
 import hudson.model.Run;
 import hudson.plugins.jobConfigHistory.JobConfigBadgeAction;
 import hudson.remoting.VirtualChannel;
-import hudson.util.IOUtils;
 import hudson.util.RemotingDiagnostics;
 import jenkins.model.Jenkins;
 

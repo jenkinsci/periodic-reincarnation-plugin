@@ -67,10 +67,6 @@ public class PeriodicReincarnationGlobalConfiguration
 	 */
 	private String maxDepth;
 	/**
-	 * Shows if info should be printed to the log or not.
-	 */
-	// private String logInfo;
-	/**
 	 * Shows if the option to restart jobs that have failed in their last build
 	 * but succeeded in their second last and have no change between these two
 	 * build should be restarted.
@@ -116,7 +112,6 @@ public class PeriodicReincarnationGlobalConfiguration
 		if (Utils.isBfaAvailable()) {
 			this.bfas = bfas;
 		}
-		// this.logInfo = logInfo;
 		this.noChange = noChange;
 	}
 
@@ -136,7 +131,6 @@ public class PeriodicReincarnationGlobalConfiguration
 		this.maxDepth = json.getString("maxDepth").trim();
 		this.activeCron = json.getString("activeCron").trim();
 		this.cronTime = json.getString("cronTime");
-		// this.logInfo = json.getString("logInfo");
 		this.noChange = json.getString("noChange");
 		save();
 		return true;

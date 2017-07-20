@@ -308,7 +308,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 				.get().getPeriodicTriggers()) {
 			if (perTri.isTimeToRestart(currentTime)) {
 				Jenkins jenkins = Jenkins.getInstance();
-				if(jenkins == null)
+				if (jenkins == null)
 					continue;
 				for (Item item : jenkins.getAllItems()) {
 
