@@ -2,8 +2,10 @@ package org.jenkinsci.plugins.periodicreincarnation;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -41,7 +43,8 @@ public class Utils {
 	/**
 	 * Logger for PeriodicReincarnation.
 	 */
-	private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
+	private static final Logger LOGGER = Logger
+			.getLogger(Utils.class.getName());
 
 	/**
 	 * If there were no changes between the last 2 builds of a project and the
@@ -52,7 +55,8 @@ public class Utils {
 	 *            the project.
 	 * @return true if it qualifies, false otherwise.
 	 */
-	protected static boolean qualifyForUnchangedRestart(AbstractProject<?, ?> project) {
+	protected static boolean qualifyForUnchangedRestart(
+			AbstractProject<?, ?> project) {
 		// proves if a build WAS stable and if there are changes between the
 		// last two builds.
 		// WAS stable means: last build was worse or equal to FAILURE, second
@@ -62,9 +66,12 @@ public class Utils {
 			return false;
 		}
 		final Run<?, ?> secondLastBuild = lastBuild.getPreviousBuild();
-		if (lastBuild.getResult() != null && lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
-				&& secondLastBuild != null && secondLastBuild.getResult() != null
-				&& secondLastBuild.getResult().isBetterThan(Result.FAILURE) && !areThereSCMChanges(lastBuild)
+		if (lastBuild.getResult() != null
+				&& lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
+				&& secondLastBuild != null
+				&& secondLastBuild.getResult() != null
+				&& secondLastBuild.getResult().isBetterThan(Result.FAILURE)
+				&& !areThereSCMChanges(lastBuild)
 				&& !isThereConfigChange(lastBuild)) {
 			// last build failed, but second one didn't and there were no
 			// changes between the two builds
@@ -90,7 +97,10 @@ public class Utils {
 		// use the String method here, because we check if optional dependency
 		// JobConfigHistory is listed.
 		try {
-			if (Jenkins.getInstance().getPlugin("jobConfigHistory") != null) {
+			Jenkins jenkins = Jenkins.getInstance();
+			if (jenkins == null)
+				return false;
+			if (jenkins.getPlugin("jobConfigHistory") != null) {
 				for (BuildBadgeAction ba : lastBuild.getBadgeActions()) {
 					if (ba instanceof JobConfigBadgeAction) {
 						return true;
@@ -118,10 +128,12 @@ public class Utils {
 	 * @throws InterruptedException
 	 * 
 	 */
-	protected static void restart(AbstractProject<?, ?> project, String cause, PeriodicTrigger perTri, int quietPeriod) {
+	protected static void restart(AbstractProject<?, ?> project, String cause,
+			PeriodicTrigger perTri, int quietPeriod) {
 		if (perTri != null) {
 			try {
-				Utils.execAction(project, perTri.getNodeAction(), perTri.getMasterAction());
+				Utils.execAction(project, perTri.getNodeAction(),
+						perTri.getMasterAction());
 			} catch (IOException e) {
 				LOGGER.warning("I/O Problem executing groovy script.");
 				e.printStackTrace();
@@ -130,7 +142,8 @@ public class Utils {
 				e.printStackTrace();
 			}
 		}
-		project.scheduleBuild(quietPeriod, new PeriodicReincarnationBuildCause(cause));
+		project.scheduleBuild(quietPeriod,
+				new PeriodicReincarnationBuildCause(cause));
 	}
 
 	/**
@@ -149,7 +162,8 @@ public class Utils {
 		for (final Iterator<RegEx> i = regExprs.iterator(); i.hasNext();) {
 			final RegEx currentRegEx = i.next();
 			try {
-				if (checkFile(build.getLogFile(), currentRegEx.getPattern(), true)) {
+				if (checkFile(build.getLogFile(), currentRegEx.getPattern(),
+						true)) {
 					return currentRegEx;
 				}
 			} catch (AbortException e) {
@@ -158,7 +172,7 @@ public class Utils {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Checks if a certain build matches any of the given Failure Cause.
 	 * 
@@ -166,17 +180,19 @@ public class Utils {
 	 *            the build.
 	 * @return BuildFailureObject if at least one match, null otherwise.
 	 */
-	protected static BuildFailureObject checkBuildForBuildFailure(Run<?, ?> build) {
+	protected static BuildFailureObject checkBuildForBuildFailure(
+			Run<?, ?> build) {
 		final PeriodicReincarnationGlobalConfiguration config = new PeriodicReincarnationGlobalConfiguration();
 		final List<BuildFailureObject> bfas = config.getBfas();
 		if (bfas == null || bfas.size() == 0) {
 			return null;
 		}
-		for (final Iterator<BuildFailureObject> i = bfas.iterator(); i.hasNext();) {
+		for (final Iterator<BuildFailureObject> i = bfas.iterator(); i
+				.hasNext();) {
 			final BuildFailureObject currentBFA = i.next();
-				if (checkBuild(build, currentBFA)) {
-					return currentBFA;
-				}
+			if (checkBuild(build, currentBFA)) {
+				return currentBFA;
+			}
 		}
 		return null;
 	}
@@ -193,17 +209,18 @@ public class Utils {
 	protected static boolean checkBuild(Run<?, ?> build, RegEx regEx) {
 		try {
 			if (build.getLogFile() == null) {
-				LOGGER.warning("Log file cound not be retrieved for project: " + build.getParent().getDisplayName());
+				LOGGER.warning("Log file cound not be retrieved for project: "
+						+ build.getParent().getDisplayName());
 				return false;
 			}
-			LOGGER.finest("Start check log file for project: " + build.getParent().getDisplayName());
+			LOGGER.finest("Start check log file for project: "
+					+ build.getParent().getDisplayName());
 			return checkFile(build.getLogFile(), regEx.getPattern(), true);
 		} catch (AbortException e) {
 			e.printStackTrace();
 		}
 		return false;
 	}
-
 
 	/**
 	 * Checks if a certain build matches the given Build Failure Cause.
@@ -214,34 +231,46 @@ public class Utils {
 	 *            the regular expression.
 	 * @return true means a match, false otherwise.
 	 */
-	protected static boolean checkBuild(Run<?, ?> build, BuildFailureObject bfa) {
-		if(!Utils.isBfaAvailable()) return false;
+	protected static boolean checkBuild(Run<?, ?> build,
+			BuildFailureObject bfa) {
+		if (!Utils.isBfaAvailable())
+			return false;
 		List<FoundFailureCause> failureCauses = new ArrayList<FoundFailureCause>();
-		FailureCauseBuildAction subAction = build.getAction(FailureCauseBuildAction.class);
+		FailureCauseBuildAction subAction = build
+				.getAction(FailureCauseBuildAction.class);
 		if (subAction != null) {
-			failureCauses = subAction.getFailureCauseDisplayData() != null ? subAction
-					.getFailureCauseDisplayData().getFoundFailureCauses()
+			failureCauses = subAction.getFailureCauseDisplayData() != null
+					? subAction.getFailureCauseDisplayData()
+							.getFoundFailureCauses()
 					: null;
-			if(failureCauses==null) return false;
-		    for(FoundFailureCause ffc:failureCauses) {
-		    	try {
-					if(((BuildFailureObject)bfa).getFailureCause().equals(ffc.getId())) return true;
+			if (failureCauses == null)
+				return false;
+			for (FoundFailureCause ffc : failureCauses) {
+				try {
+					if (((BuildFailureObject) bfa).getFailureCause()
+							.equals(ffc.getId()))
+						return true;
 				} catch (AbortException e) {
-					LOGGER.warning("Failure cause doesn't seem to exist (may have been deleted): " + e.getMessage());
+					LOGGER.warning(
+							"Failure cause doesn't seem to exist (may have been deleted): "
+									+ e.getMessage());
 				}
-		    }
+			}
 		}
 		return false;
 	}
 
-	
 	/**
 	 * Determine if the plugin build-failure-analyzer is available
 	 * 
 	 * @return true iff pluginManager contains "build-failure-analyzer"
 	 */
 	public static boolean isBfaAvailable() {
-		return Jenkins.getInstance().pluginManager.getPlugin("build-failure-analyzer") != null;
+		Jenkins jenkins = Jenkins.getInstance();
+		if (jenkins == null)
+			return false;
+		return jenkins.pluginManager
+				.getPlugin("build-failure-analyzer") != null;
 	}
 
 	/**
@@ -257,16 +286,17 @@ public class Utils {
 	 * 
 	 * @return True if reg ex was found in the file, false otherwise.
 	 */
-	private static boolean checkFile(File file, Pattern pattern, boolean abortAfterFirstHit) {
+	private static boolean checkFile(File file, Pattern pattern,
+			boolean abortAfterFirstHit) {
 		if (pattern == null) {
 			return false;
 		}
 		boolean rslt = false;
-		BufferedReader reader = null;
-		// pattern to filter out our own messages in the logs so we don't create a respawn loop
+		// pattern to filter out our own messages in the logs so we don't create
+		// a respawn loop
 		Pattern prPattern = Pattern.compile(".*Periodic Reincarnation.*");
-		try {
-			reader = new BufferedReader(new FileReader(file));
+		try (BufferedReader reader = new BufferedReader(
+				new InputStreamReader(new FileInputStream(file), "UTF-8"))) {
 			String line;
 			while ((line = reader.readLine()) != null) {
 				final Matcher matcher = pattern.matcher(line);
@@ -281,8 +311,6 @@ public class Utils {
 			}
 		} catch (IOException e) {
 			LOGGER.warning("No such file: " + file.getPath());
-		} finally {
-			IOUtils.closeQuietly(reader);
 		}
 		return rslt;
 	}
@@ -316,7 +344,8 @@ public class Utils {
 	 * @throws InterruptedException
 	 *             interrupt exception
 	 */
-	protected static void execAction(AbstractProject<?, ?> project, String nodeAction, String masterAction)
+	protected static void execAction(AbstractProject<?, ?> project,
+			String nodeAction, String masterAction)
 			throws IOException, InterruptedException {
 		final Node node;
 		final Computer slave;
@@ -332,7 +361,8 @@ public class Utils {
 		}
 		if (masterAction != null && masterAction.length() > 1) {
 			LOGGER.fine("Executing master script");
-			executeGroovyScript(nodeAction, Jenkins.MasterComputer.localChannel);
+			executeGroovyScript(nodeAction,
+					Jenkins.MasterComputer.localChannel);
 		}
 	}
 
@@ -344,36 +374,41 @@ public class Utils {
 	 * @param channel
 	 *            virtual channel of the node.
 	 */
-	private static void executeGroovyScript(String script, VirtualChannel channel) {
+	private static void executeGroovyScript(String script,
+			VirtualChannel channel) {
 		try {
 			RemotingDiagnostics.executeGroovy(script, channel);
 		} catch (IOException e) {
-			LOGGER.warning("I/O Problem while executing the following script: " + script);
+			LOGGER.warning("I/O Problem while executing the following script: "
+					+ script);
 		} catch (InterruptedException e) {
-			LOGGER.warning("Interrupted while executing the following script: " + script);
+			LOGGER.warning("Interrupted while executing the following script: "
+					+ script);
 		}
 	}
 
 	/**
 	 * Searches for a FailureCause by its ID
 	 * 
-	 * @return the FailureCause object, if one with the given id exists, null otherwise
+	 * @return the FailureCause object, if one with the given id exists, null
+	 *         otherwise
 	 */
 	public static FailureCause getFailureCauseById(String id) {
-		try{
-			return Jenkins.getInstance()
-					.getPlugin(PluginImpl.class).getKnowledgeBase()
+		try {
+			Jenkins jenkins = Jenkins.getInstance();
+			if (jenkins == null)
+				return null;
+			return jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
 					.getCause(id);
-		}catch(Exception e) {
+		} catch (Exception e) {
 			LOGGER.warning(e.getMessage());
 		}
 		return null;
 	}
 
-
 	/**
-	 * Returns all available failure cause ids as string from Build Failure Analyzer
-	 * Plugin.
+	 * Returns all available failure cause ids as string from Build Failure
+	 * Analyzer Plugin.
 	 * 
 	 * @return Returns the list of all available failure cause ids.
 	 */
@@ -382,59 +417,60 @@ public class Utils {
 	}
 
 	/**
-	 * Reads all available failure causes from Build Failure Analyzer
-	 * Plugin.
+	 * Reads all available failure causes from Build Failure Analyzer Plugin.
 	 * 
-	 * @param true if string should contain name, false if it should contain id
+	 * @param true
+	 *            if string should contain name, false if it should contain id
 	 * 
 	 * @return Returns list of ids(false) or the names(true)
 	 */
 	public static List<String> getAvailableFailureCausesIds(boolean names) {
 		Collection<FailureCause> failureCausesColl;
 		List<FailureCause> failureCauseNames = null;
+		List<String> ret = new ArrayList<String>();
 		try {
-			failureCausesColl = Jenkins.getInstance()
-					.getPlugin(PluginImpl.class).getKnowledgeBase()
-					.getCauseNames();
+			Jenkins jenkins = Jenkins.getInstance();
+			if (jenkins == null)
+				return null;
+			failureCausesColl = jenkins.getPlugin(PluginImpl.class)
+					.getKnowledgeBase().getCauseNames();
 
-			if (Jenkins.getInstance().getPlugin(PluginImpl.class)
-					.getKnowledgeBase().getCauseNames() instanceof List) {
+			if (jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
+					.getCauseNames() instanceof List) {
 				failureCauseNames = (List<FailureCause>) failureCausesColl;
 			} else {
 				failureCauseNames = new ArrayList<FailureCause>(
 						failureCausesColl);
 			}
+			for (FailureCause fc : failureCauseNames) {
+				if (names) {
+					ret.add(fc.getName());
+				} else {
+					ret.add(fc.getId());
+				}
+			}
 		} catch (Exception e) {
 			LOGGER.info("Failed to load failure causes. " + e);
-		}
-		List<String> ret = new ArrayList<String>();
-		for(FailureCause fc : failureCauseNames) {
-			if(names) {
-				ret.add(fc.getName());
-			}else {
-				ret.add(fc.getId());
-			}
 		}
 		return ret;
 	}
 
 	/**
-	 * Reads all available failure causes from Build Failure Analyzer
-	 * Plugin.
+	 * Reads all available failure causes from Build Failure Analyzer Plugin.
 	 * 
-	 * @return Returns the list of all available failure causes (names and
-	 *         ids).
+	 * @return Returns the list of all available failure causes (names and ids).
 	 */
 	public static List<FailureCause> getAvailableFailureCauses() {
 		Collection<FailureCause> failureCausesColl;
 		List<FailureCause> failureCauseNames = null;
 		try {
-			failureCausesColl = Jenkins.getInstance()
-					.getPlugin(PluginImpl.class).getKnowledgeBase()
-					.getCauseNames();
-
-			if (Jenkins.getInstance().getPlugin(PluginImpl.class)
-					.getKnowledgeBase().getCauseNames() instanceof List) {
+			Jenkins jenkins = Jenkins.getInstance();
+			if (jenkins == null)
+				return null;
+			failureCausesColl = jenkins.getPlugin(PluginImpl.class)
+					.getKnowledgeBase().getCauseNames();
+			if (jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
+					.getCauseNames() instanceof List) {
 				failureCauseNames = (List<FailureCause>) failureCausesColl;
 			} else {
 				failureCauseNames = new ArrayList<FailureCause>(

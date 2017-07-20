@@ -52,7 +52,6 @@ public class BuildFailureObject extends PeriodicTrigger {
      *             if the FailureCause ID doesn't exist in the BuildFailure Database.
      */
     public String getFailureCause() throws AbortException {
-        Collection<String> causes = Utils.getAvailableFailureCausesIds();
         FailureCause fc = Utils.getFailureCauseById(this.value);
         if(fc == null) throw new AbortException("Failure Cause with id " + this.value + " does not exist!");
         return fc.getId();
@@ -67,7 +66,6 @@ public class BuildFailureObject extends PeriodicTrigger {
      *             if the FailureCause ID doesn't exist in the BuildFailure Database.
      */
     public String getFailureCauseName() throws AbortException {
-    	Collection<String> causes = Utils.getAvailableFailureCausesIds();
         FailureCause fc = Utils.getFailureCauseById(this.value);
         if(fc == null) throw new AbortException("Failure Cause with id " + this.value + " does not exist!");
         return fc.getName();
