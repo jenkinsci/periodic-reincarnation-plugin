@@ -9,7 +9,7 @@
     <name>Periodic Reincarnation Plugin</name>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>periodic-reincarnation</artifactId>
-    <version>1.11</version>
+    <version>1.12-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Periodic+Reincarnation+Plugin</url>
 
@@ -61,7 +61,7 @@
             scm:git:ssh://git@github.com/jenkinsci/periodic-reincarnation-plugin.git
         </developerConnection>
         <url>https://github.com/jenkinsci/periodic-reincarnation-plugin</url>
-      <tag>periodic-reincarnation-1.11</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <properties>
