@@ -11,7 +11,7 @@
     <artifactId>periodic-reincarnation</artifactId>
     <version>1.11-SNAPSHOT</version>
     <packaging>hpi</packaging>
-    <url>https://plugins.jenkins.io/periodic-reincarnation</url>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/Periodic+Reincarnation+Plugin</url>
 
     <repositories>
         <repository>
