@@ -311,18 +311,16 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 				if (jenkins == null)
 					continue;
 				for (Item item : jenkins.getAllItems()) {
-
-					checkFolder(item, perTri);
-					if (!(item instanceof AbstractProject<?, ?>))
-						continue;
-					checkProject(item, perTri);
+					if(item instanceof Folder)
+						checkFolder((Folder)item, perTri);
+					if (item instanceof AbstractProject<?, ?>)
+						checkProject((AbstractProject<?, ?>)item, perTri);
 				}
 			}
 		}
 	}
 
-	private void checkProject(Item item, PeriodicTrigger perTri) {
-		AbstractProject<?, ?> project = (AbstractProject<?, ?>) item;
+	private void checkProject(AbstractProject<?, ?> project, PeriodicTrigger perTri) {
 		if (isValidCandidateForRestart(project)
 				&& !scheduledProjects.contains(project.getFullDisplayName())) {
 			if ((Utils.isBfaAvailable()
@@ -343,15 +341,12 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 		}
 	}
 
-	private void checkFolder(Item item, PeriodicTrigger perTri) {
-		if (item instanceof Folder) {
-			Folder folder = (Folder) item;
-			for (Item itemInFolder : folder.getItems()) {
-				if (itemInFolder instanceof Folder) {
-					checkFolder(itemInFolder, perTri);
-				} else {
-					checkProject(itemInFolder, perTri);
-				}
+	private void checkFolder(Folder folder, PeriodicTrigger perTri) {
+		for (Item itemInFolder : folder.getItems()) {
+			if (itemInFolder instanceof Folder) {
+				checkFolder((Folder)itemInFolder, perTri);
+			} else if (itemInFolder instanceof AbstractProject<?, ?>){
+				checkProject((AbstractProject<?, ?>)itemInFolder, perTri);
 			}
 		}
 	}
