@@ -184,7 +184,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
 			PeriodicReincarnationBuildCause cause = build
 					.getCause(PeriodicReincarnationBuildCause.class);
 			if (cause == null)
-				continue;
+				break;
 			if (cause.getShortDescription()
 					.contains(Constants.AFTERBUILDRESTART)) {
 				count++;
