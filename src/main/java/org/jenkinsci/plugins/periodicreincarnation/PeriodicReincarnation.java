@@ -372,9 +372,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 					return;
 				for (Item item : jenkins.getAllItems()) {
 					checkFolder(item);
-					if (!(item instanceof AbstractProject<?, ?>))
-						continue;
-					checkProject(item);
+					if (item instanceof AbstractProject<?, ?>)
+						checkProject((AbstractProject<?, ?>)item);
 				}
 			}
 		} catch (ANTLRException e1) {
@@ -389,15 +388,14 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 			for (Item itemInFolder : folder.getItems()) {
 				if (itemInFolder instanceof Folder) {
 					checkFolder(itemInFolder);
-				} else {
-					checkProject(itemInFolder);
+				} else if (itemInFolder instanceof AbstractProject){
+					checkProject((AbstractProject<?, ?>)itemInFolder);
 				}
 			}
 		}
 	}
 
-	private void checkProject(Item item) {
-		AbstractProject<?, ?> project = (AbstractProject<?, ?>) item;
+	private void checkProject(AbstractProject<?, ?> project) {
 		if (isValidCandidateForRestart(project)
 				&& Utils.qualifyForUnchangedRestart(project)
 				&& !scheduledProjects.contains(project.getFullDisplayName())) {
