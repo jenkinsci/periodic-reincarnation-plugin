@@ -149,7 +149,7 @@ public class PeriodicReincarnationGlobalConfiguration
 	public FormValidation doCheckCronTime(@QueryParameter String value)
 			throws ANTLRException, NullPointerException {
 		try {
-			new CronTab(value);
+			new CronTab(value.trim());
 			return FormValidation.ok();
 		} catch (ANTLRException e) {
 			return FormValidation.error(
