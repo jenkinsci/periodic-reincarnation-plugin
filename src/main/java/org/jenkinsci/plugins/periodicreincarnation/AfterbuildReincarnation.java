@@ -199,6 +199,6 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
 	}
 	
 	private boolean isMavenBuild(AbstractBuild<?, ?> build) {
-		return (build instanceof MavenBuild);
+		return (Utils.inMavenPluginAvailable() && build instanceof MavenBuild);
 	}
 }

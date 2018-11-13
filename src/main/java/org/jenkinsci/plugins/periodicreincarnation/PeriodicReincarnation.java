@@ -453,6 +453,6 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	}
 	
 	private boolean isMavenModule(AbstractProject<?, ?> project) {
-		return (project instanceof MavenModule);
+		return (Utils.inMavenPluginAvailable() && project instanceof MavenModule);
 	}
 }
