@@ -13,6 +13,7 @@ import com.cloudbees.hudson.plugins.folder.Folder;
 import antlr.ANTLRException;
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.maven.MavenModule;
 import hudson.model.AbstractProject;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.Item;
@@ -313,7 +314,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 				for (Item item : jenkins.getAllItems()) {
 					if(item instanceof Folder)
 						checkFolder((Folder)item, perTri);
-					if (item instanceof AbstractProject<?, ?>)
+					if (item instanceof AbstractProject<?, ?> && !(isMavenModule((AbstractProject<?, ?>)item)))
 						checkProject((AbstractProject<?, ?>)item, perTri);
 				}
 			}
@@ -345,7 +346,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 		for (Item itemInFolder : folder.getItems()) {
 			if (itemInFolder instanceof Folder) {
 				checkFolder((Folder)itemInFolder, perTri);
-			} else if (itemInFolder instanceof AbstractProject<?, ?>){
+			} else if (itemInFolder instanceof AbstractProject<?, ?> && !(isMavenModule((AbstractProject<?, ?>)itemInFolder))){
 				checkProject((AbstractProject<?, ?>)itemInFolder, perTri);
 			}
 		}
@@ -372,7 +373,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 					return;
 				for (Item item : jenkins.getAllItems()) {
 					checkFolder(item);
-					if (item instanceof AbstractProject<?, ?>)
+					if (item instanceof AbstractProject<?, ?> && !(isMavenModule((AbstractProject<?, ?>)item)))
 						checkProject((AbstractProject<?, ?>)item);
 				}
 			}
@@ -388,7 +389,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 			for (Item itemInFolder : folder.getItems()) {
 				if (itemInFolder instanceof Folder) {
 					checkFolder(itemInFolder);
-				} else if (itemInFolder instanceof AbstractProject){
+				} else if (itemInFolder instanceof AbstractProject && !(isMavenModule((AbstractProject<?, ?>)item))){
 					checkProject((AbstractProject<?, ?>)itemInFolder);
 				}
 			}
@@ -449,5 +450,9 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	 */
 	public static PeriodicReincarnation get() {
 		return AsyncPeriodicWork.all().get(PeriodicReincarnation.class);
+	}
+	
+	private boolean isMavenModule(AbstractProject<?, ?> project) {
+		return (project instanceof MavenModule);
 	}
 }

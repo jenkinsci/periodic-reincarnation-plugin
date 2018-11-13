@@ -4,6 +4,7 @@ import static hudson.model.Result.SUCCESS;
 
 import hudson.AbortException;
 import hudson.Extension;
+import hudson.maven.MavenBuild;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.TaskListener;
@@ -38,7 +39,7 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
 	public void onCompleted(AbstractBuild<?, ?> build, TaskListener listener) {
 
 		// stop if no build or project can be retrieved
-		if (build == null || build.getProject() == null) {
+		if (build == null || build.getProject() == null || isMavenBuild(build)) {
 			return;
 		}
 
@@ -195,5 +196,9 @@ public class AfterbuildReincarnation extends RunListener<AbstractBuild<?, ?>> {
 			build = build.getPreviousBuild();
 		}
 		return true;
+	}
+	
+	private boolean isMavenBuild(AbstractBuild<?, ?> build) {
+		return (build instanceof MavenBuild);
 	}
 }
