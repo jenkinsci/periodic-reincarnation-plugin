@@ -389,7 +389,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 			for (Item itemInFolder : folder.getItems()) {
 				if (itemInFolder instanceof Folder) {
 					checkFolder(itemInFolder);
-				} else if (itemInFolder instanceof AbstractProject && !(isMavenModule((AbstractProject<?, ?>)item))){
+				} else if (itemInFolder instanceof AbstractProject && !(isMavenModule((AbstractProject<?, ?>)itemInFolder))){
 					checkProject((AbstractProject<?, ?>)itemInFolder);
 				}
 			}
