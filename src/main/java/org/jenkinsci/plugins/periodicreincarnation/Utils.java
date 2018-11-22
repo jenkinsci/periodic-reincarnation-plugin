@@ -483,7 +483,7 @@ public class Utils {
 		return failureCauseNames;
 	}
 	
-	protected static boolean inMavenPluginAvailable() {
+	protected static boolean isMavenPluginAvailable() {
 		PluginWrapper wrapper = Jenkins.getInstance().getPluginManager().getPlugin("maven-plugin");
 		return (wrapper != null && wrapper.isEnabled());
 	}
