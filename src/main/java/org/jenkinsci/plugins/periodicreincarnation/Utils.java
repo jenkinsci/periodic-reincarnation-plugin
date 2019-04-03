@@ -209,11 +209,6 @@ public class Utils {
 	 */
 	protected static boolean checkBuild(Run<?, ?> build, RegEx regEx) {
 		try {
-			if (build.getLogFile() == null) {
-				LOGGER.warning("Log file cound not be retrieved for project: "
-						+ build.getParent().getDisplayName());
-				return false;
-			}
 			LOGGER.finest("Start check log file for project: "
 					+ build.getParent().getDisplayName());
 			return checkFile(build.getLogFile(), regEx.getPattern(), true);
