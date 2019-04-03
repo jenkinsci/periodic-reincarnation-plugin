@@ -19,6 +19,7 @@ import com.sonyericsson.jenkins.plugins.bfa.model.FailureCauseBuildAction;
 import com.sonyericsson.jenkins.plugins.bfa.model.FoundFailureCause;
 
 import hudson.AbortException;
+import hudson.PluginWrapper;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildBadgeAction;
@@ -480,6 +481,11 @@ public class Utils {
 			LOGGER.info("Failed to load failure causes. " + e);
 		}
 		return failureCauseNames;
+	}
+	
+	protected static boolean isMavenPluginAvailable() {
+		PluginWrapper wrapper = Jenkins.getInstance().getPluginManager().getPlugin("maven-plugin");
+		return (wrapper != null && wrapper.isEnabled());
 	}
 
 }
