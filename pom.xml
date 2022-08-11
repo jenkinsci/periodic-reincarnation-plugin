@@ -76,7 +76,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>jobConfigHistory</artifactId>
-            <version>2.8</version>
+            <version>1155.v28a_46a_cc06a_5</version>
             <optional>true</optional>
         </dependency>
         <dependency>
