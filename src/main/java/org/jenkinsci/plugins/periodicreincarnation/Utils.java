@@ -231,7 +231,7 @@ public class Utils {
 			BuildFailureObject bfa) {
 		if (!Utils.isBfaAvailable())
 			return false;
-		List<FoundFailureCause> failureCauses = new ArrayList<FoundFailureCause>();
+		List<FoundFailureCause> failureCauses;
 		FailureCauseBuildAction subAction = build
 				.getAction(FailureCauseBuildAction.class);
 		if (subAction != null) {
