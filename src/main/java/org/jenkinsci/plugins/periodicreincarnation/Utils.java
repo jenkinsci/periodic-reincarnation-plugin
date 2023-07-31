@@ -67,8 +67,9 @@ public class Utils {
 			return false;
 		}
 		final Run<?, ?> secondLastBuild = lastBuild.getPreviousBuild();
-		if (lastBuild.getResult() != null
-				&& lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
+		Result lastBuildResult = lastBuild.getResult();
+		if (lastBuildResult != null
+				&& lastBuildResult.isWorseOrEqualTo(Result.FAILURE)
 				&& secondLastBuild != null
 				&& secondLastBuild.getResult() != null
 				&& secondLastBuild.getResult().isBetterThan(Result.FAILURE)
