@@ -436,12 +436,17 @@ public class Utils {
 		List<String> ret = new ArrayList<String>();
 		try {
 			Jenkins jenkins = Jenkins.getInstance();
-			if (jenkins == null)
+			if (jenkins == null) {
 				return null;
-			failureCausesColl = jenkins.getPlugin(PluginImpl.class)
+			}
+			PluginImpl plugin = jenkins.getPlugin(PluginImpl.class);
+			if (plugin == null) {
+				return null;
+			}
+			failureCausesColl = plugin
 					.getKnowledgeBase().getCauseNames();
 
-			if (jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
+			if (plugin.getKnowledgeBase()
 					.getCauseNames() instanceof List) {
 				failureCauseNames = (List<FailureCause>) failureCausesColl;
 			} else {
@@ -471,11 +476,16 @@ public class Utils {
 		List<FailureCause> failureCauseNames = null;
 		try {
 			Jenkins jenkins = Jenkins.getInstance();
-			if (jenkins == null)
+			if (jenkins == null) {
 				return null;
-			failureCausesColl = jenkins.getPlugin(PluginImpl.class)
+			}
+			PluginImpl plugin = jenkins.getPlugin(PluginImpl.class);
+			if (plugin == null) {
+				return null;
+			}
+			failureCausesColl = plugin
 					.getKnowledgeBase().getCauseNames();
-			if (jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
+			if (plugin.getKnowledgeBase()
 					.getCauseNames() instanceof List) {
 				failureCauseNames = (List<FailureCause>) failureCausesColl;
 			} else {
