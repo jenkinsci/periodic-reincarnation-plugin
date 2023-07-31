@@ -397,9 +397,14 @@ public class Utils {
 	public static FailureCause getFailureCauseById(String id) {
 		try {
 			Jenkins jenkins = Jenkins.getInstance();
-			if (jenkins == null)
+			if (jenkins == null) {
 				return null;
-			return jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
+			}
+			PluginImpl plugin = jenkins.getPlugin(PluginImpl.class);
+			if (plugin == null) {
+				return null;
+			}
+			return plugin.getKnowledgeBase()
 					.getCause(id);
 		} catch (Exception e) {
 			LOGGER.warning(e.getMessage());
