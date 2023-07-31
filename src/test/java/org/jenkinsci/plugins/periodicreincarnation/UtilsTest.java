@@ -1,21 +1,19 @@
 package org.jenkinsci.plugins.periodicreincarnation;
 
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
-
 import hudson.PluginManager;
 import hudson.PluginWrapper;
 import jenkins.model.Jenkins;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnitRunner;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({Jenkins.class, PluginManager.class, PluginWrapper.class})
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+@RunWith(MockitoJUnitRunner.class)
 public class UtilsTest {
 
 	@Mock
@@ -27,19 +25,14 @@ public class UtilsTest {
 	@Mock
 	private PluginWrapper wrapper;
 
-	@Before
-	public void setUp() throws Exception {
-		PowerMockito.mockStatic(Jenkins.class);
-		PowerMockito.when(Jenkins.getInstance()).thenReturn(jenkins);
-		PowerMockito.when(jenkins.getPluginManager()).thenReturn(pluginManager);
-		PowerMockito.when(pluginManager.getPlugin("maven-plugin"))
-				.thenReturn(wrapper);
-	}
-
 	@Test
 	public void testIsMavenPluginAvailable() {
-		PowerMockito.when(wrapper.isEnabled()).thenReturn(true);
-		assertTrue(Utils.isMavenPluginAvailable());
+		try (MockedStatic<Jenkins> jenkinsStatic = Mockito.mockStatic(Jenkins.class)) {
+			jenkinsStatic.when(Jenkins::getInstanceOrNull).thenReturn(jenkins);
+			when(jenkins.getPluginManager()).thenReturn(pluginManager);
+			when(pluginManager.getPlugin("maven-plugin")).thenReturn(wrapper);
+			when(wrapper.isEnabled()).thenReturn(true);
+			assertTrue(Utils.isMavenPluginAvailable());
+		}
 	}
-
 }

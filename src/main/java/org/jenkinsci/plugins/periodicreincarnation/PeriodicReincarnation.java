@@ -14,6 +14,7 @@ import antlr.ANTLRException;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.maven.MavenModule;
+import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.AsyncPeriodicWork;
 import hudson.model.Item;
@@ -324,12 +325,7 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	private void checkProject(AbstractProject<?, ?> project, PeriodicTrigger perTri) {
 		if (isValidCandidateForRestart(project)
 				&& !scheduledProjects.contains(project.getFullDisplayName())) {
-			if ((Utils.isBfaAvailable()
-					&& perTri.getClass() == BuildFailureObject.class
-					&& Utils.checkBuild(project.getLastBuild(),
-							(BuildFailureObject) perTri))
-					|| perTri.getClass() == RegEx.class && Utils.checkBuild(
-							project.getLastBuild(), (RegEx) perTri)) {
+			if (matchesFailure(project, perTri) || matchesRegex(project, perTri)) {
 				this.scheduledProjects.add(project.getFullDisplayName());
 				if (this.periodicTriggerRestartList.containsKey(perTri)) {
 					this.periodicTriggerRestartList.get(perTri).add(project);
@@ -424,10 +420,8 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 			isLocallyDeactivated = property.getIsLocallyDeactivated();
 		}
 		return !isLocallyDeactivated && !project.isDisabled()
-				&& project.isBuildable() && project.getLastBuild() != null
-				&& project.getLastBuild().getResult() != null
-				&& project.getLastBuild().getResult()
-						.isWorseOrEqualTo(Result.FAILURE)
+				&& project.isBuildable()
+				&& failedOrWorse(project.getLastBuild())
 				&& !project.isBuilding() && !project.isInQueue();
 	}
 
@@ -454,5 +448,29 @@ public class PeriodicReincarnation extends AsyncPeriodicWork {
 	
 	private boolean isMavenModule(AbstractProject<?, ?> project) {
 		return (Utils.isMavenPluginAvailable() && project instanceof MavenModule);
+	}
+
+	private static boolean failedOrWorse(AbstractBuild<?, ?> build) {
+		if (build == null) {
+			return false;
+		}
+		Result result = build.getResult();
+		if (result == null) {
+			return false;
+		}
+		return result.isWorseOrEqualTo(Result.FAILURE);
+	}
+
+	private static boolean matchesRegex(AbstractProject<?, ?> project, PeriodicTrigger perTri) {
+		AbstractBuild<?, ?> lastBuild = project.getLastBuild();
+		return perTri.getClass() == RegEx.class
+				&& lastBuild != null
+				&& Utils.checkBuild(lastBuild, (RegEx) perTri);
+	}
+
+	private static boolean matchesFailure(AbstractProject<?, ?> project, PeriodicTrigger perTri) {
+		return Utils.isBfaAvailable()
+				&& perTri.getClass() == BuildFailureObject.class
+				&& Utils.checkBuild(project.getLastBuild(), (BuildFailureObject) perTri);
 	}
 }

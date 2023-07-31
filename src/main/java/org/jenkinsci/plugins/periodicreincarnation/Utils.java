@@ -67,8 +67,9 @@ public class Utils {
 			return false;
 		}
 		final Run<?, ?> secondLastBuild = lastBuild.getPreviousBuild();
-		if (lastBuild.getResult() != null
-				&& lastBuild.getResult().isWorseOrEqualTo(Result.FAILURE)
+		Result lastBuildResult = lastBuild.getResult();
+		if (lastBuildResult != null
+				&& lastBuildResult.isWorseOrEqualTo(Result.FAILURE)
 				&& secondLastBuild != null
 				&& secondLastBuild.getResult() != null
 				&& secondLastBuild.getResult().isBetterThan(Result.FAILURE)
@@ -231,7 +232,7 @@ public class Utils {
 			BuildFailureObject bfa) {
 		if (!Utils.isBfaAvailable())
 			return false;
-		List<FoundFailureCause> failureCauses = new ArrayList<FoundFailureCause>();
+		List<FoundFailureCause> failureCauses;
 		FailureCauseBuildAction subAction = build
 				.getAction(FailureCauseBuildAction.class);
 		if (subAction != null) {
@@ -343,14 +344,18 @@ public class Utils {
 	protected static void execAction(AbstractProject<?, ?> project,
 			String nodeAction, String masterAction)
 			throws IOException, InterruptedException {
-		final Node node;
-		final Computer slave;
-		try {
-			node = project.getLastBuild().getBuiltOn();
-			slave = node.toComputer();
-		} catch (NullPointerException e) {
+		if (project == null) {
 			return;
 		}
+		AbstractBuild<?, ?> lastBuild = project.getLastBuild();
+		if (lastBuild == null) {
+			return;
+		}
+		final Node node = lastBuild.getBuiltOn();
+		if (node == null) {
+			return;
+		}
+		final Computer slave = node.toComputer();
 		if (nodeAction != null && nodeAction.length() > 1) {
 			LOGGER.fine("Executing node script");
 			executeGroovyScript(nodeAction, slave.getChannel());
@@ -392,9 +397,14 @@ public class Utils {
 	public static FailureCause getFailureCauseById(String id) {
 		try {
 			Jenkins jenkins = Jenkins.getInstance();
-			if (jenkins == null)
+			if (jenkins == null) {
 				return null;
-			return jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
+			}
+			PluginImpl plugin = jenkins.getPlugin(PluginImpl.class);
+			if (plugin == null) {
+				return null;
+			}
+			return plugin.getKnowledgeBase()
 					.getCause(id);
 		} catch (Exception e) {
 			LOGGER.warning(e.getMessage());
@@ -426,12 +436,17 @@ public class Utils {
 		List<String> ret = new ArrayList<String>();
 		try {
 			Jenkins jenkins = Jenkins.getInstance();
-			if (jenkins == null)
+			if (jenkins == null) {
 				return null;
-			failureCausesColl = jenkins.getPlugin(PluginImpl.class)
+			}
+			PluginImpl plugin = jenkins.getPlugin(PluginImpl.class);
+			if (plugin == null) {
+				return null;
+			}
+			failureCausesColl = plugin
 					.getKnowledgeBase().getCauseNames();
 
-			if (jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
+			if (plugin.getKnowledgeBase()
 					.getCauseNames() instanceof List) {
 				failureCauseNames = (List<FailureCause>) failureCausesColl;
 			} else {
@@ -461,11 +476,16 @@ public class Utils {
 		List<FailureCause> failureCauseNames = null;
 		try {
 			Jenkins jenkins = Jenkins.getInstance();
-			if (jenkins == null)
+			if (jenkins == null) {
 				return null;
-			failureCausesColl = jenkins.getPlugin(PluginImpl.class)
+			}
+			PluginImpl plugin = jenkins.getPlugin(PluginImpl.class);
+			if (plugin == null) {
+				return null;
+			}
+			failureCausesColl = plugin
 					.getKnowledgeBase().getCauseNames();
-			if (jenkins.getPlugin(PluginImpl.class).getKnowledgeBase()
+			if (plugin.getKnowledgeBase()
 					.getCauseNames() instanceof List) {
 				failureCauseNames = (List<FailureCause>) failureCausesColl;
 			} else {
@@ -479,7 +499,11 @@ public class Utils {
 	}
 	
 	protected static boolean isMavenPluginAvailable() {
-		PluginWrapper wrapper = Jenkins.getInstance().getPluginManager().getPlugin("maven-plugin");
+		Jenkins jenkins = Jenkins.getInstanceOrNull();
+		if (jenkins == null) {
+			return false;
+		}
+		PluginWrapper wrapper = jenkins.getPluginManager().getPlugin("maven-plugin");
 		return (wrapper != null && wrapper.isEnabled());
 	}
 

@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import hudson.Util;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
@@ -149,13 +150,15 @@ public class PeriodicReincarnationGlobalConfiguration
 	public FormValidation doCheckCronTime(@QueryParameter String value)
 			throws ANTLRException, NullPointerException {
 		try {
-			new CronTab(value.trim());
+			String pattern = Util.fixEmptyAndTrim(value);
+			if (pattern == null) {
+				return FormValidation.error("Cron time is null.");
+			}
+			new CronTab(pattern);
 			return FormValidation.ok();
 		} catch (ANTLRException e) {
 			return FormValidation.error(
 					"Cron time could not be parsed. Please check for type errors!");
-		} catch (NullPointerException e) {
-			return FormValidation.error("Cron time is null.");
 		}
 	}
 
