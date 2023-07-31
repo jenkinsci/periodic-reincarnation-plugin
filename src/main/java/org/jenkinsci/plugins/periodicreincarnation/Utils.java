@@ -479,7 +479,11 @@ public class Utils {
 	}
 	
 	protected static boolean isMavenPluginAvailable() {
-		PluginWrapper wrapper = Jenkins.getInstance().getPluginManager().getPlugin("maven-plugin");
+		Jenkins jenkins = Jenkins.getInstanceOrNull();
+		if (jenkins == null) {
+			return false;
+		}
+		PluginWrapper wrapper = jenkins.getPluginManager().getPlugin("maven-plugin");
 		return (wrapper != null && wrapper.isEnabled());
 	}
 
